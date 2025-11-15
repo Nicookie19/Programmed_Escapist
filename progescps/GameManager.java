@@ -3,10 +3,10 @@ package progescps;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.function.Consumer;
-import javax.swing.SwingUtilities;
+import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * Full GameManager.java - merged and updated.
@@ -50,6 +50,7 @@ public class GameManager {
     private boolean inCombat = false;
     private boolean isMoving = false;
     private long lastMoveTime = 0;
+    private GameUI ui; // Reference to the UI
 
     // Flag used to signal that loadGameFrom(...) was just executed so startGamePostSelection
     // won't try to re-run new-game prompts.
@@ -88,6 +89,11 @@ public class GameManager {
 
     public GameManager(InputProvider inputProvider) {
         this.scan = inputProvider != null ? inputProvider : new InputProvider();
+        initializeWorld();
+        initializeFactions();
+    }
+    public void setUi(GameUI ui) {
+        this.ui = ui;
         initializeWorld();
         initializeFactions();
     }
@@ -918,8 +924,8 @@ public class GameManager {
             int w = uiTheme.getMenuWidth();
             System.out.println(Color.colorize("|" + " ".repeat(Math.max(0, w - 2)) + "|", uiTheme.getTextColor()));
         }
-        System.out.println(Color.colorize("| 1. Easy: Reduced enemy strength, more rewards          |", uiTheme.getSecondaryColor()));
-        System.out.println(Color.colorize("| 2. Normal: Balanced gameplay                          |", uiTheme.getHighlightColor()));
+        System.out.println(Color.colorize("| 1. Easy: Reduced enemy strength, more rewards           |", uiTheme.getSecondaryColor()));
+        System.out.println(Color.colorize("| 2. Normal: Balanced gameplay                            |", uiTheme.getHighlightColor()));
         System.out.println(Color.colorize("| 3. Hard: Increased enemy strength, fewer rewards        |", uiTheme.getCombatColor()));
         {
             int w = uiTheme.getMenuWidth();
@@ -952,7 +958,7 @@ public class GameManager {
             System.out.println(Color.colorize("|" + " ".repeat(Math.max(0, w - 2)) + "|", uiTheme.getTextColor()));
         }
         System.out.println(Color.colorize("| 1. No  - Normal gameplay with save/load                 |", uiTheme.getSecondaryColor()));
-        System.out.println(Color.colorize("| 2. Yes - Permadeath: Game ends permanently on death    |", uiTheme.getCombatColor()));
+        System.out.println(Color.colorize("| 2. Yes - Permadeath: Game ends permanently on death     |", uiTheme.getCombatColor()));
         {
             int w = uiTheme.getMenuWidth();
             System.out.println(Color.colorize("|" + " ".repeat(Math.max(0, w - 2)) + "|", uiTheme.getTextColor()));
@@ -1303,7 +1309,7 @@ public class GameManager {
         }
     }
 
-    private String getFactionQuestName(String factionName) {
+    private String getFactionQuestName(String factionName) { 
         switch (factionName) {
             case "Companions":
                 return "Clear Bandit Camp";
@@ -1554,6 +1560,10 @@ public class GameManager {
                         System.out.println(Color.colorize("Game Over - Returning to main menu.", Color.YELLOW));
                         this.enemy = null;
                         this.player = null;
+                        if (ui != null) {
+                            ui.showMainMenu();
+                        }
+                        throw new GameStopException(); // Stop the game thread
                     }
                 }
 
@@ -1641,7 +1651,11 @@ public class GameManager {
                         System.out.println("Press Enter to continue...");
                         scan.nextLine();
                         this.enemy = null;
+                        // player is set to null, which is correct.
                         this.player = null;
+                        if (ui != null) {
+                            ui.showMainMenu();
+                        }
                         throw new GameStopException();
                     }
                 }
