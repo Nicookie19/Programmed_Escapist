@@ -108,6 +108,7 @@ public class GameUI {
 
         this.inputProvider = new InputProvider();
         this.manager = new GameManager(inputProvider);
+        this.manager.setUi(this); // Give GameManager a reference to the UI
 
         // Enable ANSI colors for console output
         progescps.Color.USE_ANSI = true;
@@ -1316,6 +1317,14 @@ public class GameUI {
         SwingUtilities.invokeLater(GameUI::new);
     }
 
+    /**
+     * Switches the view to the main menu. Can be called from any thread.
+     */
+    public void showMainMenu() {
+        SwingUtilities.invokeLater(() -> {
+            cardLayout.show(rootPanel, "MENU");
+        });
+    }
     private void applyTheme() {
         java.awt.Color bg = darkTheme ? BG_DARK : new java.awt.Color(245, 245, 252);
         java.awt.Color leftBg = darkTheme ? GAME_LEFT_BG : new java.awt.Color(232, 236, 245);
