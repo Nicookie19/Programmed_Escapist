@@ -7,17 +7,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.PrintStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import javax.swing.SwingConstants;
-import javax.swing.BorderFactory;
 
 /**
  * Full GameUI.java updated to use GameManager.loadGameFromAsync(...) to avoid race conditions
@@ -803,6 +801,7 @@ public class GameUI {
             inputProvider.clearPending();
             manager.uiStartGameWithClass(4);
             updateHeroSprite("Architect");
+            cardLayout.show(rootPanel, "GAME");
             dialog.dispose();
         });
         btnPenTester.addActionListener(e -> {
