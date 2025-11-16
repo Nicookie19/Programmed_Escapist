@@ -146,6 +146,7 @@ public class GameUI {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
                 statsTimer.stop();
+                stopAllAnimations();
             }
         });
 
@@ -154,6 +155,17 @@ public class GameUI {
         testAndSetDBStatus();
         // --- [END NEW] ---
     }
+
+    private void stopAllAnimations() {
+        if (loadingPanel.getComponent(1) instanceof AnimatedBackgroundPanel) {
+            ((AnimatedBackgroundPanel) loadingPanel.getComponent(1)).stop();
+        }
+        if (mainMenuPanel.getComponent(1) instanceof AnimatedBackgroundPanel) {
+            ((AnimatedBackgroundPanel) mainMenuPanel.getComponent(1)).stop();
+        }
+        stopLoadingAnimation();
+    }
+
 
     private JPanel createLoadingPanel() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
@@ -165,7 +177,7 @@ public class GameUI {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
         panel.add(title, BorderLayout.NORTH);
 
-        JPanel center = new GradientPanel(BG_DARK, BG_DARK.darker());
+		JPanel center = new AnimatedBackgroundPanel();
         center.setOpaque(true);
         center.setBackground(BG_DARK);
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
@@ -215,7 +227,7 @@ public class GameUI {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
         panel.add(title, BorderLayout.NORTH);
 
-        JPanel center = new GradientPanel(BG_DARK, BG_DARK.darker());
+		JPanel center = new AnimatedBackgroundPanel();
         center.setBorder(new EmptyBorder(24, 12, 24, 12));
         center.setOpaque(true);
         center.setBackground(BG_DARK);
@@ -286,7 +298,7 @@ public class GameUI {
         b.setForeground(ACCENT_LIGHT);
         b.setFocusPainted(false);
         b.setOpaque(true);
-        b.setBorder(BorderFactory.createLineBorder(BUTTON_BORDER, 2));
+		b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(BUTTON_BORDER, 1), new EmptyBorder(5, 15, 5, 15)));
         b.setFont(b.getFont().deriveFont(Font.BOLD, 14f));
 
         final java.awt.Color base = BUTTON_BG;

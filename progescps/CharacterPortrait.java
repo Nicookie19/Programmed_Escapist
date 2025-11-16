@@ -90,7 +90,7 @@ public class CharacterPortrait extends JPanel {
             int x = in.left + (availW - size) / 2;
             int y = in.top + (availH - size) / 2;
 
-            sprite.paint(g, x, y, size, size);
+            sprite.paint(g, x, y, size, size); // Pass size for both width and height
         } else {
             // Draw placeholder text if no sprite is loaded
             g.setColor(Color.GRAY);

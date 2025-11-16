@@ -167,35 +167,41 @@ public class CharacterSprite {
         // First normalize the class name to handle case variations
         String normalizedClass = className.trim().toLowerCase();
         
-        // Map normalized class names to specific sprites with unique files per class
-        String spritePath = switch (normalizedClass) {
-            case "debugger" -> "72 Character Free/Char 1/Character 1.png";  // White mage looking character
-            case "hacker" -> "72 Character Free/Char 2/Character 5.png";    // Dark robed character
-            case "pentester", "pen tester" -> "72 Character Free/Char 3/Character 9.png";  // Rogue-like character
-            case "architect" -> "72 Character Free/Char 7/Character 1.png"; // Knight looking character
-            case "tester" -> "72 Character Free/Char 8/Character 5.png";    // Archer looking character
-            case "support" -> "72 Character Free/Char 9/Character 9.png";   // Healer looking character
-            default -> {
+        String spritePath;
+        switch (normalizedClass) {
+            case "debugger": spritePath = "sprites/debugger.png"; break;
+            case "hacker": spritePath = "sprites/hacker.png"; break;
+            case "pentester":
+            case "pen tester":
+                spritePath = "sprites/pentester.png"; break;
+            case "architect": spritePath = "sprites/architect.png"; break;
+            case "tester": spritePath = "sprites/tester.png"; break;
+            case "support": spritePath = "sprites/support.png"; break;
+            default:
                 System.err.println("Warning: Using default sprite for unknown class: " + className);
-                yield "72 Character Free/Char 1/Character 1.png";
-            }
-        };
-        // Return absolute classpath resource path under package root
+                spritePath = "sprites/idle.png";
+                break;
+        }
         return "/progescps/" + spritePath;
     }
 
     private String getFileSpritePathForClass(String className) {
         // Same mapping as above, but returns filesystem-relative path within src
         String normalizedClass = className.trim().toLowerCase();
-        String spritePath = switch (normalizedClass) {
-            case "debugger" -> "72 Character Free/Char 1/Character 1.png";
-            case "hacker" -> "72 Character Free/Char 2/Character 5.png";
-            case "pentester", "pen tester" -> "72 Character Free/Char 3/Character 9.png";
-            case "architect" -> "72 Character Free/Char 7/Character 1.png";
-            case "tester" -> "72 Character Free/Char 8/Character 5.png";
-            case "support" -> "72 Character Free/Char 9/Character 9.png";
-            default -> "72 Character Free/Char 1/Character 1.png";
-        };
+        String spritePath;
+        switch (normalizedClass) {
+            case "debugger": spritePath = "72 Character Free/Char 1/Character 1.png"; break;
+            case "hacker": spritePath = "72 Character Free/Char 2/Character 5.png"; break;
+            case "pentester":
+            case "pen tester":
+                spritePath = "72 Character Free/Char 3/Character 9.png"; break;
+            case "architect": spritePath = "72 Character Free/Char 7/Character 1.png"; break;
+            case "tester": spritePath = "72 Character Free/Char 8/Character 5.png"; break;
+            case "support": spritePath = "72 Character Free/Char 9/Character 9.png"; break;
+            default:
+                spritePath = "72 Character Free/Char 1/Character 1.png";
+                break;
+        }
         return "src/progescps/" + spritePath;
     }
     

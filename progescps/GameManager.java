@@ -56,6 +56,9 @@ public class GameManager {
     // won't try to re-run new-game prompts.
     private volatile boolean justLoaded = false;
 
+    // A shared lock to prevent log messages from interrupting menu drawing.
+    public static final Object CONSOLE_LOCK = new Object();
+
     public boolean isInCombat() {
         return inCombat;
     }
@@ -1079,20 +1082,22 @@ public class GameManager {
                     throw new GameStopException();
                 }
 
-                printBorder("top");
-                printCenteredLine("Adventurer's Lodge", uiTheme.getInnColor());
-                printBorder("divider");
-                printCenteredLine("1. Travel to New Lands", uiTheme.getTextColor());
-                printCenteredLine("2. Manage Inventory and Equipment", uiTheme.getTextColor());
-                printCenteredLine("3. View Gold", uiTheme.getTextColor());
-                printCenteredLine("4. View Quest Log", uiTheme.getTextColor());
-                printCenteredLine("5. View Player Stats", uiTheme.getTextColor());
-                printCenteredLine("6. Rest at Inn", uiTheme.getTextColor());
-                printCenteredLine("7. Faction Menu", uiTheme.getTextColor());
-                printCenteredLine("8. Save Game", uiTheme.getTextColor());
-                printCenteredLine("9. View Achievements", uiTheme.getTextColor());
-                printBorder("bottom");
-                System.out.print(Color.colorize("Choose an option (1-9): ", uiTheme.getHighlightColor()));
+                synchronized (CONSOLE_LOCK) {
+                    printBorder("top");
+                    printCenteredLine("Adventurer's Lodge", uiTheme.getInnColor());
+                    printBorder("divider");
+                    printCenteredLine("1. Travel to New Lands", uiTheme.getTextColor());
+                    printCenteredLine("2. Manage Inventory and Equipment", uiTheme.getTextColor());
+                    printCenteredLine("3. View Gold", uiTheme.getTextColor());
+                    printCenteredLine("4. View Quest Log", uiTheme.getTextColor());
+                    printCenteredLine("5. View Player Stats", uiTheme.getTextColor());
+                    printCenteredLine("6. Rest at Inn", uiTheme.getTextColor());
+                    printCenteredLine("7. Faction Menu", uiTheme.getTextColor());
+                    printCenteredLine("8. Save Game", uiTheme.getTextColor());
+                    printCenteredLine("9. View Achievements", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-9): ", uiTheme.getHighlightColor()));
+                }
 
                 int choice = getChoice(1, 9);
 
@@ -1147,15 +1152,17 @@ public class GameManager {
                     throw new GameStopException();
                 }
 
-                printBorder("top");
-                printCenteredLine("Inventory and Equipment", uiTheme.getInventoryColor());
-                printBorder("divider");
-                printCenteredLine("1. View Inventory", uiTheme.getTextColor());
-                printCenteredLine("2. View Equipment", uiTheme.getTextColor());
-                printCenteredLine("3. Equip or Use Item", uiTheme.getTextColor());
-                printCenteredLine("4. Back", uiTheme.getTextColor());
-                printBorder("bottom");
-                System.out.print(Color.colorize("Choose an option (1-4): ", uiTheme.getHighlightColor()));
+                synchronized (CONSOLE_LOCK) {
+                    printBorder("top");
+                    printCenteredLine("Inventory and Equipment", uiTheme.getInventoryColor());
+                    printBorder("divider");
+                    printCenteredLine("1. View Inventory", uiTheme.getTextColor());
+                    printCenteredLine("2. View Equipment", uiTheme.getTextColor());
+                    printCenteredLine("3. Equip or Use Item", uiTheme.getTextColor());
+                    printCenteredLine("4. Back", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-4): ", uiTheme.getHighlightColor()));
+                }
 
                 String input = scan.nextLine().trim();
                 if (stopRequested) {
@@ -1189,15 +1196,17 @@ public class GameManager {
                     throw new GameStopException();
                 }
 
-                printBorder("top");
-                printCenteredLine("Faction Hall", uiTheme.getFactionColor());
-                printBorder("divider");
-                printCenteredLine("1. Join a Faction", uiTheme.getTextColor());
-                printCenteredLine("2. View Faction Status", uiTheme.getTextColor());
-                printCenteredLine("3. Undertake Faction Quest", uiTheme.getTextColor());
-                printCenteredLine("4. Back", uiTheme.getTextColor());
-                printBorder("bottom");
-                System.out.print(Color.colorize("Choose an option (1-4): ", uiTheme.getHighlightColor()));
+                synchronized (CONSOLE_LOCK) {
+                    printBorder("top");
+                    printCenteredLine("Faction Hall", uiTheme.getFactionColor());
+                    printBorder("divider");
+                    printCenteredLine("1. Join a Faction", uiTheme.getTextColor());
+                    printCenteredLine("2. View Faction Status", uiTheme.getTextColor());
+                    printCenteredLine("3. Undertake Faction Quest", uiTheme.getTextColor());
+                    printCenteredLine("4. Back", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-4): ", uiTheme.getHighlightColor()));
+                }
                 int choice = getChoice(1, 4);
                 switch (choice) {
                     case 1:
