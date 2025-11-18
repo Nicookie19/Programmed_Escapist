@@ -1052,7 +1052,7 @@ public class GameUI {
         return "";
     }
 
-    private void refreshStats() {
+    void refreshStats() {
         try {
             Hero p = manager.player;
             if (p == null) {

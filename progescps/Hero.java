@@ -122,6 +122,14 @@ public abstract class Hero implements Serializable {
         return 0;
     }
 
+    /**
+     * Gets the hero's bonus critical hit chance.
+     * @return The percentage bonus to critical hit chance.
+     */
+    public int getCritChanceBonus() {
+        return 0; // Default hero has no bonus
+    }
+
     public boolean isHardcoreMode() {
         return hardcoreMode;
     }

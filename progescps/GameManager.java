@@ -1539,6 +1539,11 @@ public class GameManager {
             envEffectsEnabled = (envChoice == 1);
         }
 
+        // Initiative Roll
+        boolean playerGoesFirst = random.nextBoolean(); // Simple 50/50 chance for now
+        combatLog.add(playerGoesFirst ? "You are faster and attack first!" : "The enemy is faster and attacks first!");
+        System.out.println(Color.colorize(playerGoesFirst ? "You are faster and attack first!" : "The enemy is faster and attacks first!", Color.CYAN));
+
         try {
             while (player.hp > 0 && enemy.isAlive()) {
                 if (stopRequested) {
@@ -1547,6 +1552,10 @@ public class GameManager {
 
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
+
+                if (ui != null) {
+                    ui.refreshStats();
+                }
 
                 if (envEffectsEnabled) {
                     applyEnvironmentalEffects(player, enemy, loc);
@@ -1578,70 +1587,14 @@ public class GameManager {
 
                 displayCombatStatus(player, enemy, combatLog);
 
-                printBorder("top");
-                printCenteredLine("Your turn! Choose an action:", Color.YELLOW);
-                printBorder("divider");
-                printCenteredLine("1. Attack", uiTheme.getTextColor());
-                printCenteredLine("2. Use Skill", uiTheme.getTextColor());
-                printCenteredLine("3. Use Shout", uiTheme.getTextColor());
-                printCenteredLine("4. Flee", uiTheme.getTextColor());
-                printBorder("bottom");
-                System.out.print(Color.colorize("Choose an option (1-4): ", Color.YELLOW));
-                int choice = getChoice(1, 4);
-
-                boolean dodgeAttack = checkDodge(player);
-
-                if (choice == 1) {
-                    performPlayerAttack(player, enemy, combatLog);
-                } else if (choice == 2) {
-                    performPlayerSkill(player, enemy, combatLog);
-                } else if (choice == 3) {
-                    performPlayerShout(player, enemy, combatLog);
+                if (playerGoesFirst) {
+                    if (playerTurn(combatLog)) return; // Flee was successful
+                    if (!enemy.isAlive()) break; // Check if enemy was defeated
+                    enemyTurn(combatLog);
                 } else {
-                    if (random.nextInt(100) < 50) {
-                        combatLog.add(player.getClassName() + " flees from battle!");
-                        System.out.println(Color.colorize("You fled from the battle!", Color.YELLOW));
-                        setCombat(false);
-                        setMoving(true);
-                        return;
-                    } else {
-                        combatLog.add(player.getClassName() + " fails to flee!");
-                        System.out.println(Color.colorize("You failed to flee!", Color.RED));
-                    }
-                }
-
-                if (player instanceof Architect && random.nextInt(100) < 15) {
-                    int counterDmg = Combat.calculateDamage(player.minDmg, player, enemy, 0);
-                    combatLog.add(player.getClassName() + " counterattacks for " + counterDmg + " damage!");
-                    System.out.println(Color.colorize(player.getClassName() + " counterattacks for " + counterDmg + " damage!", Color.GREEN));
-                    enemy.receiveDamage(counterDmg);
-                }
-
-                player.decrementCooldowns();
-
-                if (!enemy.isAlive()) {
-                    handleVictory(player, combatLog, enemy);
-                    break;
-                }
-
-                if (dodgeAttack || enemy.stunnedForNextTurn) {
-                    combatLog.add("Enemy is stunned or you dodged, so they skip their turn!");
-                    System.out.println(Color.colorize("Enemy is stunned or you dodged, so they skip their turn!", Color.GREEN));
-                    enemy.stunnedForNextTurn = false;
-                } else {
-                    if (player instanceof PenTester && ((PenTester) player).smokeBombActive) {
-                        combatLog.add("Enemy's attack is weakened by Smoke Bomb!");
-                        System.out.println(Color.colorize("Enemy's attack is weakened by Smoke Bomb!", Color.YELLOW));
-                        int originalMinDmg = enemy.minDmg;
-                        int originalMaxDmg = enemy.maxDmg;
-                        enemy.minDmg = (int) (enemy.minDmg * 0.5);
-                        enemy.maxDmg = (int) (enemy.maxDmg * 0.5);
-                        enemy.takeTurn(player);
-                        enemy.minDmg = originalMinDmg;
-                        enemy.maxDmg = originalMaxDmg;
-                    } else {
-                        enemy.takeTurn(player);
-                    }
+                    enemyTurn(combatLog);
+                    if (player.hp <= 0) break; // Check if player was defeated
+                    if (playerTurn(combatLog)) return; // Flee was successful
                 }
 
                 if (player.hp <= 0) {
@@ -1669,6 +1622,8 @@ public class GameManager {
                     }
                 }
             }
+            // After loop, if enemy is dead, handle victory
+            if (!enemy.isAlive()) handleVictory(player, combatLog, enemy);
         } catch (GameStopException e) {
             System.out.println(Color.colorize("Combat interrupted by request. Exiting combat.", Color.YELLOW));
             return;
@@ -1683,6 +1638,72 @@ public class GameManager {
         combatLog.forEach(System.out::println);
     }
 
+    /**
+     * Executes the player's turn.
+     * @return true if the player successfully fled, false otherwise.
+     */
+    private boolean playerTurn(List<String> combatLog) {
+        printBorder("top");
+        printCenteredLine("Your turn! Choose an action:", Color.YELLOW);
+        printBorder("divider");
+        printCenteredLine("1. Attack", uiTheme.getTextColor());
+        printCenteredLine("2. Use Skill", uiTheme.getTextColor());
+        printCenteredLine("3. Use Shout", uiTheme.getTextColor());
+        printCenteredLine("4. Flee", uiTheme.getTextColor());
+        printBorder("bottom");
+        System.out.print(Color.colorize("Choose an option (1-4): ", Color.YELLOW));
+        int choice = getChoice(1, 4);
+
+        if (choice == 1) {
+            performPlayerAttack(player, enemy, combatLog);
+        } else if (choice == 2) {
+            performPlayerSkill(player, enemy, combatLog);
+        } else if (choice == 3) {
+            performPlayerShout(player, enemy, combatLog);
+        } else {
+            if (random.nextInt(100) < 50) {
+                combatLog.add(player.getClassName() + " flees from battle!");
+                System.out.println(Color.colorize("You fled from the battle!", Color.YELLOW));
+                setCombat(false);
+                setMoving(true);
+                return true; // Flee successful
+            } else {
+                combatLog.add(player.getClassName() + " fails to flee!");
+                System.out.println(Color.colorize("You failed to flee!", Color.RED));
+            }
+        }
+
+        if (player instanceof Architect && random.nextInt(100) < 15) {
+            int counterDmg = Combat.calculateDamage(player.minDmg, player, enemy, 0);
+            combatLog.add(player.getClassName() + " counterattacks for " + counterDmg + " damage!");
+            System.out.println(Color.colorize(player.getClassName() + " counterattacks for " + counterDmg + " damage!", Color.GREEN));
+            enemy.receiveDamage(counterDmg);
+        }
+
+        player.decrementCooldowns();
+        return false; // Flee not successful or not chosen
+    }
+
+    /**
+     * Executes the enemy's turn.
+     */
+    private void enemyTurn(List<String> combatLog) {
+        boolean dodgeAttack = checkDodge(player);
+        if (dodgeAttack || enemy.stunnedForNextTurn) {
+            String message = enemy.stunnedForNextTurn ? "Enemy is stunned and skips their turn!" : "You dodged the enemy's attack!";
+            combatLog.add(message);
+            System.out.println(Color.colorize(message, Color.GREEN));
+            enemy.stunnedForNextTurn = false;
+        } else {
+            // Critical hit for enemy
+            if (isCriticalHit(0)) { // Enemies have base 5% crit
+                System.out.println(Color.colorize("The enemy lands a CRITICAL HIT!", Color.RED));
+                enemy.nextAttackIsDoubleDamage = true; // A simple way to boost damage
+            }
+            enemy.takeTurn(player);
+        }
+    }
+
     private boolean checkDodge(Hero player) {
         if (player instanceof Hacker && random.nextInt(100) < 20) {
             System.out.println(Color.colorize(player.getClassName() + " dodges the enemy’s next attack!", Color.GREEN));
@@ -1694,6 +1715,11 @@ public class GameManager {
         return false;
     }
 
+    private boolean isCriticalHit(int critChance) {
+        // Base 5% critical hit chance, plus any bonus
+        return random.nextInt(100) < (5 + critChance);
+    }
+
     private void performPlayerAttack(Hero player, Enemy enemy, List<String> combatLog) {
         int baseDamage = player.minDmg + random.nextInt(player.maxDmg - player.minDmg + 1);
         int damage = Combat.calculateDamage(baseDamage, player, enemy, 0);
@@ -1701,6 +1727,14 @@ public class GameManager {
         combatLog.add(player.getClassName() + " attacks for " + damage + " damage!");
         System.out.println(Color.colorize("You attack for " + damage + " damage!", uiTheme.getTextColor()));
         enemy.receiveDamage(damage);
+
+        if (isCriticalHit(player.getCritChanceBonus())) {
+            int critDamage = (int) (damage * 0.5);
+            enemy.receiveDamage(critDamage);
+            String critMessage = "CRITICAL HIT! You deal an extra " + critDamage + " damage!";
+            combatLog.add(critMessage);
+            System.out.println(Color.colorize(critMessage, Color.ORANGE));
+        }
     }
 
     private void performPlayerSkill(Hero player, Enemy enemy, List<String> combatLog) {
@@ -1921,15 +1955,24 @@ public class GameManager {
             player.addGold(amount);
             System.out.println(Color.colorize("You found " + amount + " gold!", Color.YELLOW));
         } else if (found.equals("potion")) {
-            String[] potions = {
-                "Health Potion", "Mana Potion", "Greater Health Potion", "Major Health Potion",
-                "Minor Health Potion", "Greater Mana Potion", "Major Mana Potion", "Minor Mana Potion",
-                "Antidote Potion", "Fire Resistance Potion", "Frost Resistance Potion",
-                "Poison Resistance Potion", "Healing Elixir", "Potion of Ultimate Healing"
-            };
-            String potion = potions[random.nextInt(potions.length)];
-            player.addItem(potion, 0.5f);
-            System.out.println(Color.colorize("You found a " + potion + "!", getItemRarity(potion)));
+            List<String> potions = new ArrayList<>();
+            try (Connection conn = GameDatabase.getConnection();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT name FROM equipment WHERE type = 'ITEM' AND (name LIKE '%Potion%' OR name LIKE '%Elixir%')")) {
+                while (rs.next()) {
+                    potions.add(rs.getString("name"));
+                }
+            } catch (SQLException e) {
+                System.out.println(Color.colorize("Database error loading potions: " + e.getMessage(), Color.RED));
+                // Fallback to a default potion if DB fails
+                potions.add("Health Potion");
+            }
+
+            if (!potions.isEmpty()) {
+                String potion = potions.get(random.nextInt(potions.size()));
+                player.addItem(potion, 0.5f);
+                System.out.println(Color.colorize("You found a " + potion + "!", getItemRarity(potion)));
+            }
         } else if (found.equals("weapon")) {
             String[] classWeapons = player instanceof Debugger ? new String[]{
                 "Iron Sword", "Steel Sword", "Mithril Sword", "Elven Sword", "Glass Sword",
@@ -1971,17 +2014,39 @@ public class GameManager {
             player.addItem(armor, 3.0f);
             System.out.println(Color.colorize("You found a " + armor + "!", getItemRarity(armor)));
         } else if (found.equals("food")) {
-            String[] foods = {
-                "Apple", "Bread Loaf", "Cheese Wheel", "Roasted Meat", "Vegetable Stew"
-            };
-            String food = foods[random.nextInt(foods.length)];
-            player.addItem(food, 0.4f);
-            System.out.println(Color.colorize("You found a " + food + "!", getItemRarity(food)));
+            List<String> foods = new ArrayList<>();
+            try (Connection conn = GameDatabase.getConnection();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT name FROM equipment WHERE type = 'ITEM' AND (name LIKE '%Apple%' OR name LIKE '%Loaf%' OR name LIKE '%Wheel%' OR name LIKE '%Meat%' OR name LIKE '%Stew%' OR name LIKE '%Steak%' OR name LIKE '%Berry%' OR name LIKE '%Snack%')")) {
+                while (rs.next()) {
+                    foods.add(rs.getString("name"));
+                }
+            } catch (SQLException e) {
+                System.out.println(Color.colorize("Database error loading foods: " + e.getMessage(), Color.RED));
+                foods.add("Apple"); // Fallback
+            }
+            if (!foods.isEmpty()) {
+                String food = foods.get(random.nextInt(foods.size()));
+                player.addItem(food, 0.4f);
+                System.out.println(Color.colorize("You found a " + food + "!", getItemRarity(food)));
+            }
         } else if (found.equals("misc")) {
-            String[] misc = {"Torch", "Map of the Realm", "Ancient Coin", "Silver Ring", "Amulet of Talos"};
-            String item = misc[random.nextInt(misc.length)];
-            player.addItem(item, 0.3f);
-            System.out.println(Color.colorize("You found a " + item + "!", getItemRarity(item)));
+            List<String> miscItems = new ArrayList<>();
+            try (Connection conn = GameDatabase.getConnection();
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT name FROM equipment WHERE type = 'ITEM' AND name NOT LIKE '%Potion%' AND name NOT LIKE '%Elixir%' AND name NOT LIKE '%Apple%' AND name NOT LIKE '%Loaf%' AND name NOT LIKE '%Wheel%' AND name NOT LIKE '%Meat%' AND name NOT LIKE '%Stew%' AND name NOT LIKE '%Steak%' AND name NOT LIKE '%Berry%' AND name NOT LIKE '%Snack%'")) {
+                while (rs.next()) {
+                    miscItems.add(rs.getString("name"));
+                }
+            } catch (SQLException e) {
+                System.out.println(Color.colorize("Database error loading misc items: " + e.getMessage(), Color.RED));
+                miscItems.add("Ancient Coin"); // Fallback
+            }
+            if (!miscItems.isEmpty()) {
+                String item = miscItems.get(random.nextInt(miscItems.size()));
+                player.addItem(item, 0.3f);
+                System.out.println(Color.colorize("You found a " + item + "!", getItemRarity(item)));
+            }
         }
     }
 
@@ -2174,50 +2239,50 @@ public class GameManager {
         int[] prices;
         if (player instanceof Debugger) {
             items = new String[]{
-                "Iron Sword", "Steel Sword", "Mithril Sword", "Elven Sword", "Glass Sword",
-                "Daedric Sword", "Dragonbone Sword", "Dawnbreaker", "Chillrend", "Dragonbane",
-                "Plate Armor", "Dragonbone Armor",
-                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos"
+                "Iron Sword", "Steel Sword", "Mithril Sword", "Elven Sword",
+                "Glass Sword", "Daedric Sword", "Dragonbone Sword", "Dawnbreaker",
+                "Chillrend", "Dragonbane", "Plate Armor", "Dragonbone Armor",
+                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos", "Elixir of Strength"
             };
-            prices = new int[]{10, 15, 20, 25, 30, 35, 40, 45, 42, 40, 20, 35, 5, 15, 10};
+            prices = new int[]{10, 15, 20, 25, 30, 35, 40, 45, 42, 40, 20, 35, 5, 15, 10, 25};
         } else if (player instanceof Hacker) {
             items = new String[]{
                 "Fire Staff", "Ice Wand", "Staff of Fireballs", "Staff of Ice Storm",
                 "Staff of Healing", "Wand of Lightning", "Orb of Elements",
                 "Robe of Protection", "Archmage Robes",
-                "Mana Potion", "Potion of Ultimate Healing", "Amulet of Talos"
+                "Mana Potion", "Potion of Ultimate Healing", "Amulet of Talos", "Scroll of Rootkit"
             };
-            prices = new int[]{15, 20, 25, 30, 35, 40, 45, 15, 25, 7, 15, 10};
+            prices = new int[]{15, 20, 25, 30, 35, 40, 45, 15, 25, 7, 15, 10, 50};
         } else if (player instanceof Tester) {
             items = new String[]{
                 "Hunting Bow", "Longbow", "Composite Bow", "Elven Bow", "Glass Bow",
                 "Daedric Bow", "Dragonbone Bow",
                 "Leather Armor", "Elven Armor",
-                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos"
+                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos", "Poisoned Arrows"
             };
-            prices = new int[]{10, 15, 20, 25, 30, 35, 40, 15, 25, 5, 15, 10};
+            prices = new int[]{10, 15, 20, 25, 30, 35, 40, 15, 25, 5, 15, 10, 20};
         } else if (player instanceof Architect) {
             items = new String[]{
                 "Warhammer", "Battleaxe", "Mace", "Flail",
                 "Chainmail", "Dragonscale Armor",
-                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos"
+                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos", "Elixir of Fortitude"
             };
-            prices = new int[]{15, 20, 25, 30, 20, 35, 5, 15, 10};
+            prices = new int[]{15, 20, 25, 30, 20, 35, 5, 15, 10, 25};
         } else if (player instanceof PenTester) {
             items = new String[]{
                 "Iron Dagger", "Steel Dagger", "Mithril Dagger", "Elven Dagger", "Glass Dagger",
                 "Daedric Dagger", "Ebony Dagger",
                 "Cloak of Shadows", "Nightshade Cloak",
-                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos"
+                "Health Potion", "Potion of Ultimate Healing", "Amulet of Talos", "Smoke Bomb"
             };
-            prices = new int[]{10, 15, 20, 25, 30, 35, 40, 15, 25, 5, 15, 10};
+            prices = new int[]{10, 15, 20, 25, 30, 35, 40, 15, 25, 5, 15, 10, 15};
         } else {
             items = new String[]{
                 "Staff of Healing", "Holy Scepter", "Divine Mace",
                 "Robe of Protection", "Holy Shroud",
-                "Mana Potion", "Potion of Ultimate Healing", "Amulet of Talos"
+                "Mana Potion", "Potion of Ultimate Healing", "Amulet of Talos", "Tome of Restoration"
             };
-            prices = new int[]{15, 20, 25, 15, 25, 7, 15, 10};
+            prices = new int[]{15, 20, 25, 15, 25, 7, 15, 10, 40};
         }
 
         for (int i = 0; i < items.length; i++) {

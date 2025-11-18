@@ -29,15 +29,20 @@ public class EquipmentManager implements Serializable {
         addEquipment("Steel Blade", Equipment.Type.WEAPON, Equipment.Rarity.UNCOMMON, 8, null);
         addEquipment("Enchanted Rapier", Equipment.Type.WEAPON, Equipment.Rarity.RARE, 12, "5% chance to deal double damage");
         addEquipment("Debugger's Wand", Equipment.Type.WEAPON, Equipment.Rarity.EPIC, 15, "10% chance to heal on hit");
+        addEquipment("Blade of Null Pointers", Equipment.Type.WEAPON, Equipment.Rarity.EPIC, 16, "Ignores a portion of enemy defense");
         addEquipment("Compiler's Hammer", Equipment.Type.WEAPON, Equipment.Rarity.LEGENDARY, 20, "15% chance to stun enemy");
+        addEquipment("Zero-Day Blade", Equipment.Type.WEAPON, Equipment.Rarity.LEGENDARY, 22, "Deals bonus damage on first strike");
         
         // Armor
         addEquipment("Cloth Robe", Equipment.Type.ARMOR, Equipment.Rarity.COMMON, 2, null);
         addEquipment("Leather Vest", Equipment.Type.ARMOR, Equipment.Rarity.COMMON, 5, null);
         addEquipment("Chain Mail", Equipment.Type.ARMOR, Equipment.Rarity.UNCOMMON, 8, null);
         addEquipment("Firewall Shield", Equipment.Type.ARMOR, Equipment.Rarity.RARE, 12, "5% chance to reflect damage");
+        addEquipment("Jacket of Holding", Equipment.Type.ARMOR, Equipment.Rarity.RARE, 10, "Increases inventory capacity");
         addEquipment("Encryption Plate", Equipment.Type.ARMOR, Equipment.Rarity.EPIC, 15, "10% chance to avoid damage");
+        addEquipment("Aegis of the Kernel", Equipment.Type.ARMOR, Equipment.Rarity.EPIC, 17, "Reduces damage from critical hits");
         addEquipment("Quantum Armor", Equipment.Type.ARMOR, Equipment.Rarity.LEGENDARY, 20, "15% chance to regenerate HP each turn");
+        addEquipment("Root's Embrace", Equipment.Type.ARMOR, Equipment.Rarity.LEGENDARY, 22, "Grants immunity to stun effects");
     }
     
     private void addEquipment(String name, Equipment.Type type, Equipment.Rarity rarity, int statBonus, String specialEffect) {

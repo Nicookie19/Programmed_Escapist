@@ -205,19 +205,24 @@ public class Enemy implements Serializable {
 
     public static String[] listEnemyNames() {
         return new String[] {
+            // Hostile
             "Virus", "Trojan", "Malware", "Spyware", "Ransomware", "Worm",
             "Rootkit", "Buffer Overflow", "SQL Injection", "Phishing Scam",
             "Adware", "Keylogger", "Botnet", "Exploit", "Zero Day",
-            "Firewall Guard", "Antivirus", "Debugger", "System Monitor",
-            "Backup Service", "Patch Manager", "Security Scanner",
             "Data Miner", "Cryptojacker", "DDoS Bot", "Logic Bomb",
             "Macro Virus", "File Infector", "Network Worm", "Drive By",
             "Clickjacking", "Session Hijacker", "Man in the Middle",
             "Credential Harvester", "Brute Force", "Dictionary Attack",
             "Rainbow Table", "Social Engineer", "Pharming Attack",
             "DNS Poisoner", "ARP Spoofer", "IP Spoofer", "Packet Sniffer",
-            "Port Scanner", "Vulnerability Scanner", "Exploit Kit",
-            "Command Injector", "Cross Site", "Script Kiddie", "Black Hat"
+            "Port Scanner", "Vulnerability Scanner", "Exploit Kit", "Data Leech",
+            "Command Injector", "Cross Site", "Script Kiddie", "Black Hat",
+            "Polymorphic Virus", "Stealth Rootkit", "AI Rogue", "Quantum Anomaly",
+            "Corrupted AI", "Firewall Drake", "Data Golem", "Code Wraith",
+            // Friendly/Neutral
+            "Firewall Guard", "Antivirus", "Debugger", "System Monitor",
+            "Backup Service", "Patch Manager", "Security Scanner", "Code Librarian",
+            "Data Archivist", "Network Cartographer", "Protocol Droid"
         };
     }
 
@@ -353,12 +358,23 @@ public class Enemy implements Serializable {
             }
         }
 
-        if (random.nextInt(100) < 30 && selectedAbility != null && specialAbilities != null && specialAbilities.containsKey(selectedAbility)) {
+        // --- Strategic Decision Making ---
+        boolean usedSpecial = false;
+        // If low on health, prioritize healing or defensive abilities
+        if (hp < maxHP * 0.35 && random.nextInt(100) < 60) {
+            if ("Self-Repair".equals(selectedAbility)) {
+                specialAbilities.get(selectedAbility).run();
+                usedSpecial = true;
+            }
+        }
+        // Otherwise, consider using any special ability
+        else if (random.nextInt(100) < 30 && selectedAbility != null && specialAbilities != null && specialAbilities.containsKey(selectedAbility)) {
             specialAbilities.get(selectedAbility).run();
+            usedSpecial = true;
             if (selectedAbility.equals("Data Poison")) {
                 player.receiveDamage(Combat.calculateDamage(5, this, player, 0));
             } else if (selectedAbility.equals("Fork Bomb")) {
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < 1; i++) { // Fork bomb now just attacks once after the announcement
                     int forkBase = random.nextInt(maxDmg - minDmg + 1) + minDmg;
                     int dmg = Combat.calculateDamage(forkBase, this, player, 0);
                     System.out.println("Enemy (" + currentName + ") attacks for " + dmg + " damage!");
@@ -369,6 +385,16 @@ public class Enemy implements Serializable {
                 int baseSlowdown = random.nextInt(15) + 15;
                 player.receiveDamage(Combat.calculateDamage(baseSlowdown, this, player, 0));
             }
+        }
+
+        // If a special ability was used that wasn't a direct attack, end the turn.
+        if (usedSpecial && !"Fork Bomb".equals(selectedAbility)) {
+             // Restore player damage if reduction period ended
+            if (playerDamageReduced && damageReductionTurns == 0) {
+                player.minDmg = originalPlayerMinDmg;
+                player.maxDmg = originalPlayerMaxDmg;
+            }
+            return;
         }
 
         int attackIdx = random.nextInt(attackNames.length);
@@ -446,16 +472,17 @@ public class Enemy implements Serializable {
                     player.receiveDamage(fallbackDmg);
                 }
                 break;
-            case "Encryption Break":
-                specialAbilities.get("System Slowdown").run();
-                break;
-            case "Privilege Escalation":
-                specialAbilities.get("Resource Drain").run();
-                break;
             default:
-                int baseDefault = random.nextInt(maxDmg - minDmg + 1) + minDmg;
+                int baseDefault = random.nextInt(Math.max(1, maxDmg - minDmg + 1)) + minDmg;
                 int dmg = Combat.calculateDamage(baseDefault, this, player, 0);
-                System.out.println("Enemy (" + currentName + ") attacks for " + dmg + " damage!");
+                // Apply critical hit bonus if the flag is set
+                if (nextAttackIsDoubleDamage) {
+                    dmg = (int) (dmg * 1.5);
+                    System.out.println("Enemy (" + currentName + ") lands a critical attack for " + dmg + " damage!");
+                    nextAttackIsDoubleDamage = false; // Reset the flag
+                } else {
+                    System.out.println("Enemy (" + currentName + ") attacks for " + dmg + " damage!");
+                }
                 player.receiveDamage(dmg);
                 break;
         }
@@ -481,16 +508,19 @@ public class Enemy implements Serializable {
             "Credential Harvester", "Brute Force", "Dictionary Attack",
             "Rainbow Table", "Social Engineer", "Pharming Attack",
             "DNS Poisoner", "ARP Spoofer", "IP Spoofer", "Packet Sniffer",
-            "Port Scanner", "Vulnerability Scanner", "Exploit Kit",
-            "Command Injector", "Cross Site", "Script Kiddie", "Black Hat"
+            "Port Scanner", "Vulnerability Scanner", "Exploit Kit", "Data Leech",
+            "Command Injector", "Cross Site", "Script Kiddie", "Black Hat",
+            "Polymorphic Virus", "Stealth Rootkit", "AI Rogue", "Quantum Anomaly",
+            "Corrupted AI", "Firewall Drake", "Data Golem", "Code Wraith"
         ));
         return alwaysHostile.contains(currentName);
     }
 
     public boolean isDocile() {
         Set<String> alwaysDocile = new HashSet<>(Arrays.asList(
-            "Firewall Guard", "Antivirus", "Debugger", "System Monitor",
-            "Backup Service", "Patch Manager", "Security Scanner"
+            "Firewall Guard", "Antivirus", "Debugger", "System Monitor", "Backup Service",
+            "Patch Manager", "Security Scanner", "Code Librarian", "Data Archivist",
+            "Network Cartographer", "Protocol Droid"
         ));
         return alwaysDocile.contains(currentName);
     }

@@ -58,6 +58,15 @@ public class Tester extends Hero {
     }
 
     @Override
+    public int getCritChanceBonus() {
+        // Passive: Critical Boost - Increased crit chance when HP is above 80%
+        if (hp > maxHP * 0.8) {
+            return 10; // +10% crit chance
+        }
+        return 5; // Base +5% crit chance for Tester
+    }
+
+    @Override
     public void useSkill(int skillIdx, Enemy enemy) {
         double multiplier = getSkillMultiplier();
         int critChance = (hp > maxHP * 0.8) ? 25 : 15; 
