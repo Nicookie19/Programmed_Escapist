@@ -86,21 +86,35 @@ public class GameManager {
         private static final long serialVersionUID = 1L;
     }
 
+    /**
+     * Default constructor for GameManager.
+     */
     public GameManager() {
         this(new InputProvider());
     }
 
+    /**
+     * Constructor for GameManager with a custom InputProvider.
+     * @param inputProvider the input provider to use
+     */
     public GameManager(InputProvider inputProvider) {
         this.scan = inputProvider != null ? inputProvider : new InputProvider();
         initializeWorld();
         initializeFactions();
     }
+    /**
+     * Sets the GameUI reference and reinitializes world and factions.
+     * @param ui the GameUI instance
+     */
     public void setUi(GameUI ui) {
         this.ui = ui;
         initializeWorld();
         initializeFactions();
     }
 
+    /**
+     * Requests to stop the current game thread.
+     */
     public void requestStopCurrentGame() {
         if (!gameRunning) {
             stopRequested = false;
@@ -182,6 +196,9 @@ public class GameManager {
     }
 
     // --- [THIS IS THE NEW DATABASE SAVE/LOAD UI BLOCK] ---
+    /**
+     * Saves the game from the UI.
+     */
     public void uiSaveGame() {
         // This is a wrapper for the console 'save' command
         new Thread(() -> {
@@ -207,6 +224,10 @@ public class GameManager {
         }, "UI-Save-Thread").start();
     }
 
+    /**
+     * Saves the game to a specific filename from the UI.
+     * @param filename the save filename
+     */
     public void uiSaveGameTo(String filename) {
         new Thread(() -> {
             System.out.println(Color.colorize("UI: Saving game to '" + filename + "'...", Color.YELLOW));
@@ -285,6 +306,9 @@ public class GameManager {
         }, "LoadAsync-Thread").start();
     }
 
+    /**
+     * Loads the game from the UI.
+     */
     public void uiLoadGame() {
         // This is a wrapper for the console 'load' command
         new Thread(() -> {
@@ -327,6 +351,10 @@ public class GameManager {
         }, "UI-Load-Thread").start();
     }
 
+    /**
+     * Loads the game from a specific filename from the UI.
+     * @param filename the save filename
+     */
     public void uiLoadGameFrom(String filename) {
         new Thread(() -> {
             System.out.println(Color.colorize("UI: Loading game from '" + filename + "'...", Color.YELLOW));
@@ -549,8 +577,14 @@ public class GameManager {
         } catch (SQLException e) {
             System.out.println(Color.colorize("Error deleting all save data: " + e.getMessage(), Color.RED));
         }
-    }   // --- [UI HELPER METHODS & WORLD INITIALIZATION] ---
+    }
+    // --- [UI HELPER METHODS & WORLD INITIALIZATION] ---
 
+    /**
+     * Prints a centered line in the UI menu.
+     * @param text the text to print
+     * @param color the color to use
+     */
     private void printCenteredLine(String text, String color) {
         String trimmed = text == null ? "" : text.trim();
         int width = uiTheme.getMenuWidth();
@@ -564,6 +598,10 @@ public class GameManager {
         System.out.println(Color.colorize(line, color));
     }
 
+    /**
+     * Prints a border for the UI menu.
+     * @param type the type of border (not used)
+     */
     private void printBorder(String type) {
         int width = uiTheme.getMenuWidth();
         System.out.println(Color.colorize("+" + "=".repeat(Math.max(0, width - 2)) + "+", uiTheme.getTextColor()));
@@ -578,6 +616,9 @@ public class GameManager {
         availableFactions.add(new Faction("Firewall Guardians"));
     }
 
+    /**
+     * Initializes the world map with locations.
+     */
     private void initializeWorld() {
         worldMap = new HashMap<>();
 
@@ -803,6 +844,9 @@ public class GameManager {
 
     // ----------------------------- Menus & Game Flow -----------------------------
 
+    /**
+     * Displays the settings menu for changing UI theme and color mode.
+     */
     private void displaySettingsMenu() {
         boolean settingsOpen = true;
 
@@ -918,6 +962,9 @@ public class GameManager {
         }
     }
 
+    /**
+     * Prompts the player to select the game difficulty.
+     */
     private void promptDifficulty() {
         printBorder("top");
         printCenteredLine("Select Difficulty", uiTheme.getDifficultyColor());

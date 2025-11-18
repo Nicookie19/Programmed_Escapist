@@ -14,11 +14,17 @@ public class AchievementManager implements Serializable {
     
     private Map<String, Achievement> achievements;
     
+    /**
+     * Constructs a new AchievementManager and initializes the default set of achievements.
+     */
     public AchievementManager() {
         achievements = new HashMap<>();
         initializeAchievements();
     }
-    
+
+    /**
+     * Initializes the default achievements by adding them to the map.
+     */
     private void initializeAchievements() {
         // Combat achievements
         addAchievement("first_blood", "First Blood", "Defeat your first enemy");
@@ -46,20 +52,39 @@ public class AchievementManager implements Serializable {
         addAchievement("faction_ally", "Faction Ally", "Reach allied status with a faction");
     }
     
+    /**
+     * Adds a new achievement to the manager.
+     * @param id The unique identifier for the achievement.
+     * @param name The name of the achievement.
+     * @param description The description of the achievement.
+     */
     private void addAchievement(String id, String name, String description) {
         achievements.put(id, new Achievement(id, name, description));
     }
-    
+
+    /**
+     * Unlocks the achievement with the specified ID if it exists and is not already unlocked.
+     * @param id The ID of the achievement to unlock.
+     */
     public void unlockAchievement(String id) {
         if (achievements.containsKey(id) && !achievements.get(id).isUnlocked()) {
             achievements.get(id).unlock();
         }
     }
-    
+
+    /**
+     * Checks if the achievement with the specified ID is unlocked.
+     * @param id The ID of the achievement to check.
+     * @return true if the achievement is unlocked, false otherwise.
+     */
     public boolean isAchievementUnlocked(String id) {
         return achievements.containsKey(id) && achievements.get(id).isUnlocked();
     }
-    
+
+    /**
+     * Gets a list of all achievements.
+     * @return A list containing all achievements.
+     */
     public List<Achievement> getAllAchievements() {
         return new ArrayList<>(achievements.values());
     }
@@ -105,23 +130,33 @@ public class AchievementManager implements Serializable {
         return achievements.size();
     }
     
+    /**
+     * Checks and unlocks combat-related achievements based on the player's actions.
+     * @param player The hero player.
+     * @param enemy The enemy involved in combat.
+     * @param comboCounter The current combo counter.
+     */
     public void checkCombatAchievements(Hero player, Enemy enemy, int comboCounter) {
         // First blood achievement
         if (enemy.hp <= 0) {
             unlockAchievement("first_blood");
-            
+
             // Boss slayer achievement
             if (enemy.getTier() == Enemy.Tier.STRONG) {
                 unlockAchievement("boss_slayer");
             }
         }
-        
+
         // Combo master achievement
         if (comboCounter >= 5) {
             unlockAchievement("combo_master");
         }
     }
-    
+
+    /**
+     * Checks and unlocks progression-related achievements based on the player's level and mode.
+     * @param player The hero player.
+     */
     public void checkProgressionAchievements(Hero player) {
         // Level achievements
         if (player.level >= 5) {
@@ -133,13 +168,16 @@ public class AchievementManager implements Serializable {
         if (player.level >= 20) {
             unlockAchievement("level_20");
         }
-        
+
         // Hardcore achievement
         if (player.level >= 10 && player.isHardcoreMode()) {
             unlockAchievement("hardcore_survivor");
         }
     }
-    
+
+    /**
+     * Displays all achievements to the console, showing unlocked and locked status.
+     */
     public void displayAchievements() {
         System.out.println(Color.colorize("\n===== ACHIEVEMENTS =====", Color.YELLOW));
         System.out.println(Color.colorize("Unlocked: " + getUnlockedCount() + "/" + getTotalCount(), Color.BLUE));

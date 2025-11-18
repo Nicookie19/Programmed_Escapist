@@ -156,6 +156,9 @@ public class GameUI {
         // --- [END NEW] ---
     }
 
+    /**
+     * Stops all animations in the UI.
+     */
     private void stopAllAnimations() {
         if (loadingPanel.getComponent(1) instanceof AnimatedBackgroundPanel) {
             ((AnimatedBackgroundPanel) loadingPanel.getComponent(1)).stop();
@@ -167,6 +170,11 @@ public class GameUI {
     }
 
 
+    /**
+     * Creates the loading panel with animated background and loading bar.
+     *
+     * @return The loading JPanel.
+     */
     private JPanel createLoadingPanel() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -177,6 +185,7 @@ public class GameUI {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
         panel.add(title, BorderLayout.NORTH);
 
+
 		JPanel center = new AnimatedBackgroundPanel();
         center.setOpaque(true);
         center.setBackground(BG_DARK);
@@ -184,6 +193,7 @@ public class GameUI {
         center.setBorder(new EmptyBorder(40, 80, 40, 80));
 
         loadingTextLabel = new JLabel("Loading");
+
         loadingTextLabel.setForeground(java.awt.Color.WHITE);
         loadingTextLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         loadingTextLabel.setFont(loadingTextLabel.getFont().deriveFont(Font.PLAIN, 14f));
@@ -217,6 +227,11 @@ public class GameUI {
         return panel;
     }
 
+    /**
+     * Creates the main menu panel with buttons and animated background.
+     *
+     * @return The main menu JPanel.
+     */
     private JPanel createMainMenuPanel() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(new EmptyBorder(16, 16, 16, 16));
@@ -293,6 +308,12 @@ public class GameUI {
         return panel;
     }
 
+    /**
+     * Styles a menu button with consistent formatting.
+     *
+     * @param b The JButton to style.
+     */
+
     private void styleMenuButton(final JButton b) {
         b.setBackground(BUTTON_BG);
         b.setForeground(ACCENT_LIGHT);
@@ -327,6 +348,11 @@ public class GameUI {
         });
     }
 
+    /**
+     * Styles a header button (or label) with consistent formatting.
+     *
+     * @param b The JComponent to style.
+     */
     private void styleHeaderButton(final JComponent b) {
         b.setOpaque(false);
         b.setForeground(darkTheme ? FOOTER : java.awt.Color.GRAY);
@@ -356,6 +382,9 @@ public class GameUI {
         });
     }
 
+    /**
+     * Starts the loading animation sequence.
+     */
     private void startLoadingSequence() {
         new Thread(() -> {
             try {
@@ -388,6 +417,9 @@ public class GameUI {
         }, "Loading-Thread").start();
     }
 
+    /**
+     * Creates the game panel with character portrait, stats, and console.
+     */
     private JPanel createGamePanel() {
 
         gameContainerPanel = new JPanel(new BorderLayout(8, 8));
@@ -1296,6 +1328,9 @@ public class GameUI {
         return res == JOptionPane.YES_OPTION;
     }
 
+    /**
+     * Tests the database connection and updates the UI accordingly.
+     */
     private void testAndSetDBStatus() {
         new Thread(() -> {
             boolean connected = GameDatabase.testConnection();
@@ -1324,6 +1359,9 @@ public class GameUI {
         }, "DB-Test-Thread").start();
     }
 
+    /**
+     * Launches the GameUI on the Event Dispatch Thread.
+     */
     public static void launch() {
         SwingUtilities.invokeLater(GameUI::new);
     }

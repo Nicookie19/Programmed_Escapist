@@ -24,6 +24,9 @@ public class AnimatedBackgroundPanel extends JPanel {
     private final List<Particle> particles;
     private final Timer timer;
 
+    /**
+     * Constructs the AnimatedBackgroundPanel, initializing particles and the animation timer.
+     */
     public AnimatedBackgroundPanel() {
         particles = new ArrayList<>();
         
@@ -55,10 +58,16 @@ public class AnimatedBackgroundPanel extends JPanel {
     /**
      * Stops the animation timer.
      */
+    /**
+     * Stops the animation timer.
+     */
     public void stop() {
         timer.stop();
     }
 
+    /**
+     * Updates the position of each particle in the animation.
+     */
     private void updateParticles() {
         int width = getWidth();
         int height = getHeight();
@@ -67,6 +76,11 @@ public class AnimatedBackgroundPanel extends JPanel {
         }
     }
 
+    /**
+     * Paints the background and particles on the panel.
+     *
+     * @param g The Graphics context used for painting.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -108,6 +122,12 @@ public class AnimatedBackgroundPanel extends JPanel {
         Color color;
         private final Random random;
 
+        /**
+         * Constructs a Particle with random properties.
+         *
+         * @param random     The Random object used for generating random values.
+         * @param starColors The array of Color objects to choose from for the particle's color.
+         */
         Particle(Random random, Color[] starColors) {
             this.random = random;
             // Initialize with placeholder values, will be reset in update
@@ -120,6 +140,12 @@ public class AnimatedBackgroundPanel extends JPanel {
             this.color = starColors[random.nextInt(starColors.length)];
         }
 
+        /**
+         * Updates the particle's position and handles its respawn when it goes off-screen.
+         *
+         * @param width  The width of the panel.
+         * @param height The height of the panel.
+         */
         void update(int width, int height) {
             if (width == 0 || height == 0) return; // Avoid division by zero or issues on init
 

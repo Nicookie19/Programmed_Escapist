@@ -47,11 +47,16 @@ public class Architect extends Hero {
         // Unyielding Spirit: Survive lethal damage once per combat (implemented in receiveDamage override)
     }
 
+    /**
+     * Uses a specific skill of the Architect against an enemy.
+     * @param skillIdx The index of the skill to use.
+     * @param enemy The target enemy.
+     */
     @Override
     public void useSkill(int skillIdx, Enemy enemy) {
         double multiplier = getSkillMultiplier();
         switch (skillIdx) {
-            case 0: 
+            case 0:
                 if (designCooldown == 0 && mana >= 20) {
                     int baseDamage = minDmg + random.nextInt(maxDmg - minDmg + 1);
                     int preDefense = (int)(baseDamage * multiplier);
@@ -69,10 +74,10 @@ public class Architect extends Hero {
                     super.useSkill(1, enemy);
                 }
                 break;
-            case 1: 
+            case 1:
                 super.useSkill(1, enemy);
                 break;
-            case 2: 
+            case 2:
                 if (rallyCooldown == 0 && mana >= 15) {
                     System.out.println("You rally the team, boosting your damage for the next attack!");
                     minDmg = (int)(minDmg * 1.5 * multiplier);
@@ -84,7 +89,7 @@ public class Architect extends Hero {
                     super.useSkill(1, enemy);
                 }
                 break;
-            case 3: 
+            case 3:
                 if (mana >= 20) {
                     int baseDamage = minDmg + random.nextInt(maxDmg - minDmg + 1);
                     int preDefense = (int)(baseDamage * 2 * multiplier);
@@ -100,9 +105,13 @@ public class Architect extends Hero {
             default:
                 super.useSkill(1, enemy);
                 break;
-        }
     }
+}
 
+    /**
+     * Receives damage and applies the Unyielding Spirit passive if triggered.
+     * @param dmg The amount of damage to receive.
+     */
     @Override
     public void receiveDamage(int dmg) {
         if (!unyieldingSpiritTriggered && hp - dmg <= 0) {

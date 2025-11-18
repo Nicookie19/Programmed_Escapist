@@ -29,10 +29,15 @@ public class CharacterSprite {
     private BufferedImage[] frameCache; // Cache for sprite frames
     private State currentState = State.IDLE;
     
+    /**
+     * Constructs a new CharacterSprite for the specified character class.
+     * @param characterClass The class of the character (e.g., "hacker", "debugger").
+     * @param parent The parent JComponent for repainting during animation.
+     */
     public CharacterSprite(String characterClass, JComponent parent) {
         this.characterClass = characterClass;
         this.parent = parent;
-        
+
         // Set up animation timer first
         animationTimer = new Timer(ANIMATION_SPEED, e -> {
             currentFrame = (currentFrame + 1) % FRAMES_PER_ROW;
@@ -41,12 +46,15 @@ public class CharacterSprite {
             }
         });
         animationTimer.setInitialDelay(ANIMATION_SPEED);
-        
+
         // Load sprite and cache frames (which will start animation when ready)
         System.out.println("Loading sprite for " + characterClass);
         loadSprite();
     }
     
+    /**
+     * Loads the sprite sheet for the character class from various possible locations.
+     */
     private void loadSprite() {
         try {
             // Load via classpath so it works from jar or any working directory

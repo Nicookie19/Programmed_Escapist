@@ -9,15 +9,6 @@ University of the Immaculate Conception
 Father Selga St., Davao City, Philippines
 
 
-Team Members:
-- Mahipus
-- Allawan
-- Eucare
-- Abad
-
-
-OCTOBER 2025
-
 ## Software Purpose
 
 Project: "Programmed Escapist"

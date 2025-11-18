@@ -15,6 +15,13 @@ public class Achievement implements Serializable {
     private boolean unlocked;
     private Date unlockDate;
     
+    /**
+     * Constructs a new Achievement with the specified id, name, and description.
+     * The achievement is initially unlocked.
+     * @param id The unique identifier for the achievement.
+     * @param name The name of the achievement.
+     * @param description The description of the achievement.
+     */
     public Achievement(String id, String name, String description) {
         this.id = id;
         this.name = name;
@@ -35,10 +42,18 @@ public class Achievement implements Serializable {
     }
     // --- [END NEW] ---
     
+    /**
+     * Gets the unique identifier of the achievement.
+     * @return The achievement ID.
+     */
     public String getId() {
         return id;
     }
-    
+
+    /**
+     * Gets the name of the achievement.
+     * @return The achievement name.
+     */
     public String getName() {
         return name;
     }

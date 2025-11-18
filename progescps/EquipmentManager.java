@@ -12,16 +12,25 @@ import java.util.Random;
  */
 public class EquipmentManager implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
+    /**
+     * List of available equipment.
+     */
     private List<Equipment> availableEquipment;
+    /**
+     * Random number generator for equipment generation.
+     */
     private Random random;
     
+    /**
+     * Constructs an EquipmentManager, initializing the list of available equipment.
+     */
     public EquipmentManager() {
         this.availableEquipment = new ArrayList<>();
         this.random = new Random();
         initializeEquipment();
     }
-    
+
     private void initializeEquipment() {
         // Weapons
         addEquipment("Rusty Dagger", Equipment.Type.WEAPON, Equipment.Rarity.COMMON, 2, null);
@@ -108,7 +117,11 @@ public class EquipmentManager implements Serializable {
         // Select random equipment from filtered list
         return filteredEquipment.get(random.nextInt(filteredEquipment.size()));
     }
-    
+
+    /**
+     * Gets a list of all available equipment.
+     * @return A list of all available equipment.
+     */
     public List<Equipment> getAllEquipment() {
         return new ArrayList<>(availableEquipment);
     }

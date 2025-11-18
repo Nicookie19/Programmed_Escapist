@@ -1,10 +1,10 @@
 package progescps;
 
-import javax.swing.*;
-import javax.swing.text.*;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
+import javax.swing.*;
+import javax.swing.text.*;
 
 
 public class ConsoleOutputInterceptor extends OutputStream {
@@ -21,6 +21,10 @@ public class ConsoleOutputInterceptor extends OutputStream {
     private static final Color GRAY = new Color(180, 180, 180);
     private static final Color DEFAULT_COLOR = WHITE;
 
+    /**
+     * Constructs a new ConsoleOutputInterceptor that redirects output to a JTextPane.
+     * @param area The JTextPane to append output to.
+     */
     public ConsoleOutputInterceptor(JTextPane area) {
         this.area = area;
     }

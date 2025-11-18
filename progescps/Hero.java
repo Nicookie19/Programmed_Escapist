@@ -38,6 +38,11 @@ public abstract class Hero implements Serializable {
         public float weight;
         public int quantity;
 
+        /**
+         * Constructs a new inventory item.
+         * @param name The name of the item.
+         * @param weight The weight of the item.
+         */
         public InventoryItem(String name, float weight) {
             this.name = name;
             this.weight = weight;
@@ -59,6 +64,10 @@ public abstract class Hero implements Serializable {
     }
     // --- [END NEW] ---
 
+    /**
+     * Constructs a new Hero with a given Random object for calculations.
+     * @param random The Random object to use for this hero.
+     */
     public Hero(Random random) {
         this.random = random;
         this.level = 1;
@@ -67,10 +76,18 @@ public abstract class Hero implements Serializable {
         this.gold = 0;
     }
 
+    /**
+     * Adds a specified amount of gold to the hero's total.
+     * @param amount The amount of gold to add.
+     */
     public void addGold(int amount) {
         this.gold += amount;
     }
 
+    /**
+     * Adds a specified amount of experience points (XP) to the hero.
+     * @param amount The amount of XP to add.
+     */
     public void addXP(int amount) {
         this.xp += amount;
         if (this.xp >= this.xpToLevel) {
@@ -80,6 +97,11 @@ public abstract class Hero implements Serializable {
         }
     }
 
+    /**
+     * Adds an item to the hero's inventory. If the item already exists, its quantity is incremented.
+     * @param name The name of the item to add.
+     * @param weight The weight of the item.
+     */
     public void addItem(String name, float weight) {
         for (InventoryItem item : inventory) {
             if (item.name.equals(name)) {
@@ -90,10 +112,18 @@ public abstract class Hero implements Serializable {
         inventory.add(new InventoryItem(name, weight));
     }
 
+    /**
+     * Removes an item from the hero's inventory by name.
+     * @param name The name of the item to remove.
+     */
     public void removeItem(String name) {
         inventory.removeIf(item -> item.name.equals(name));
     }
 
+    /**
+     * Gets the hero's current inventory.
+     * @return A list of InventoryItem objects.
+     */
     public List<InventoryItem> getInventory() {
         return inventory;
     }
@@ -114,10 +144,18 @@ public abstract class Hero implements Serializable {
     }
     // --- [END NEW] ---
 
+    /**
+     * Gets the class name of the hero.
+     * @return The simple name of the hero's class.
+     */
     public String getClassName() {
         return this.getClass().getSimpleName();
     }
 
+    /**
+     * Gets the hero's defense value.
+     * @return The defense value.
+     */
     public int getDefense() {
         return 0;
     }
@@ -130,31 +168,58 @@ public abstract class Hero implements Serializable {
         return 0; // Default hero has no bonus
     }
 
+    /**
+     * Checks if the hero is in hardcore mode.
+     * @return true if in hardcore mode, false otherwise.
+     */
     public boolean isHardcoreMode() {
         return hardcoreMode;
     }
 
+    /**
+     * Gets the hero's current amount of gold.
+     * @return The total gold.
+     */
     public int getGold() {
         return gold;
     }
 
+    /**
+     * Checks if the hero is still alive.
+     * @return true if the hero's HP is greater than 0, false otherwise.
+     */
     public boolean isAlive() {
         return hp > 0;
     }
 
+    /**
+     * Gets the hero's minimum damage for attacks.
+     * @return The minimum damage.
+     */
     public int getMinDamage() {
         return minDmg;
     }
 
-public int getMaxDamage() {
+    /**
+     * Gets the hero's maximum damage for attacks.
+     * @return The maximum damage.
+     */
+    public int getMaxDamage() {
         return maxDmg;
     }
 
+    /**
+     * Gets the hero's achievement manager.
+     * @return The AchievementManager instance.
+     */
     public AchievementManager getAchievementManager() {
         return achievementManager;
     }
 
-    // Expose active status effects for UI display
+    /**
+     * Gets a copy of the list of active status effects on the hero.
+     * @return A list of StatusEffect objects.
+     */
     public List<StatusEffect> getStatusEffects() {
         return new ArrayList<>(activeStatusEffects);
     }
@@ -182,12 +247,20 @@ public int getMaxDamage() {
         activeStatusEffects.clear();
     }
 
+    /**
+     * Applies a status effect to the hero.
+     * @param effect The StatusEffect to apply.
+     */
     public void applyStatusEffect(StatusEffect effect) {
         if (effect == null) return;
         activeStatusEffects.add(effect);
         effect.apply(this);
     }
 
+    /**
+     * Updates the duration and effects of all active status effects on the hero.
+     * Removes effects that have expired.
+     */
     public void updateStatusEffects() {
         List<StatusEffect> toRemove = new ArrayList<>();
         for (StatusEffect effect : activeStatusEffects) {
@@ -200,26 +273,51 @@ public int getMaxDamage() {
         activeStatusEffects.removeAll(toRemove);
     }
 
+    /**
+     * Gets the list of weapon types this hero is allowed to use.
+     * @return A list of strings representing allowed weapon types.
+     */
     protected List<String> getAllowedWeapons() {
         return Collections.emptyList();
     }
 
+    /**
+     * Gets the list of armor types this hero is allowed to wear.
+     * @return A list of strings representing allowed armor types.
+     */
     protected List<String> getAllowedArmors() {
         return Collections.emptyList();
     }
 
+    /**
+     * Decrements the cooldowns of any abilities the hero has.
+     * Base implementation does nothing.
+     */
     public void decrementCooldowns() {
         // Default: no cooldowns to decrement
     }
 
+    /**
+     * Applies any passive effects the hero might have at the start of combat or on level-up.
+     * Base implementation does nothing.
+     */
     public void applyPassiveEffects() {
         // Default: no passive effects
     }
 
+    /**
+     * Gets the skill multiplier for the hero, which can affect ability power.
+     * @return The skill damage multiplier.
+     */
     public double getSkillMultiplier() {
         return 1.0;
     }
 
+    /**
+     * Uses a hero's skill against an enemy.
+     * @param skillIndex The index of the skill to use.
+     * @param enemy The target enemy.
+     */
     public void useSkill(int skillIndex, Enemy enemy) {
         // Base implementation: treat index 1 as a normal attack
         if (enemy == null) return;
@@ -229,6 +327,10 @@ public int getMaxDamage() {
         System.out.println(Color.colorize("You strike for " + damage + " damage.", Color.GREEN));
     }
 
+    /**
+     * Uses the hero's special ability in combat.
+     * @param combat The current combat instance.
+     */
     public void useSpecialAbility(Combat combat) {
         if (combat == null) return;
         // Default special routes to skill index 3, if subclasses choose to override behavior
@@ -237,11 +339,18 @@ public int getMaxDamage() {
         combat.resetCombo();
     }
 
+    /**
+     * Reduces the hero's HP by the specified damage amount.
+     * @param dmg The amount of damage to receive.
+     */
     public void receiveDamage(int dmg) {
         this.hp -= dmg;
     }
 
-    // Display available attacks for selection in UI
+    /**
+     * Displays the hero's available attacks to the console.
+     * Used for the user interface in combat.
+     */
     public void showAttacks() {
         if (attackNames == null || attackNames.length == 0) {
             System.out.println(Color.colorize("No attacks available.", Color.YELLOW));
@@ -253,11 +362,19 @@ public int getMaxDamage() {
         }
     }
 
-    // Shout helpers used by GameManager
+    /**
+     * Gets the available shouts for the hero.
+     * @return An array of strings containing shout names.
+     */
     public String[] getShouts() {
         return shouts != null ? shouts : new String[0];
     }
 
+    /**
+     * Uses a shout ability.
+     * @param index The index of the shout to use.
+     * @param enemy The target enemy (can be null if the shout doesn't target).
+     */
     public void useShout(int index, Enemy enemy) {
         String[] availableShouts = getShouts();
         if (index < 0 || index >= availableShouts.length) {
@@ -270,7 +387,11 @@ public int getMaxDamage() {
         // Subclasses can override to implement concrete effects.
     }
 
-    // Faction helpers
+    /**
+     * Checks if the hero is a member of a specific faction.
+     * @param name The name of the faction.
+     * @return true if the hero is a member, false otherwise.
+     */
     public boolean isInFaction(String name) {
         if (name == null) return false;
         for (Faction f : factions) {
@@ -281,6 +402,10 @@ public int getMaxDamage() {
         return false;
     }
 
+    /**
+     * Makes the hero join a faction and applies its benefits.
+     * @param faction The faction to join.
+     */
     public void joinFaction(Faction faction) {
         if (faction == null) return;
         // Add to list if not present
@@ -298,10 +423,19 @@ public int getMaxDamage() {
         faction.applyBenefits(this);
     }
 
+    /**
+     * Gets the list of factions the hero is associated with.
+     * @return A copy of the list of factions.
+     */
     public List<Faction> getFactions() {
         return new ArrayList<>(factions);
     }
 
+    /**
+     * Adds reputation points for a specific faction.
+     * @param factionName The name of the faction.
+     * @param amount The amount of reputation to add.
+     */
     public void addFactionReputation(String factionName, int amount) {
         if (factionName == null) return;
         for (Faction f : factions) {
@@ -317,11 +451,18 @@ public int getMaxDamage() {
         f.addReputation(amount);
     }
 
-    // Level-up checks used by GameManager
+    /**
+     * Checks if the hero has enough XP to level up.
+     * @return true if XP is greater than or equal to the XP required for the next level.
+     */
     public boolean checkLevelUp() {
         return this.xp >= this.xpToLevel;
     }
 
+    /**
+     * Levels up the hero, increasing stats and resetting XP.
+     * Subclasses can override for class-specific level-up bonuses.
+     */
     public void levelUp() {
         this.level++;
         this.xp = 0;
