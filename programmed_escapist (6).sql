@@ -114,7 +114,20 @@ INSERT INTO `enemy` (`id`, `tier`, `difficulty`, `currentName`, `maxHP`, `hp`, `
 (46, 'NORMAL', 'NORMAL', 'Command Injector', 120, 120, 15, 29, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (47, 'NORMAL', 'NORMAL', 'Cross Site', 110, 110, 12, 25, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (48, 'NORMAL', 'NORMAL', 'Script Kiddie', 105, 105, 15, 29, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(49, 'STRONG', 'NORMAL', 'Black Hat', 220, 220, 38, 58, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+(49, 'STRONG', 'NORMAL', 'Black Hat', 220, 220, 38, 58, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(50, 'NORMAL', 'NORMAL', 'Data Leech', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(51, 'NORMAL', 'NORMAL', 'Polymorphic Virus', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(52, 'NORMAL', 'NORMAL', 'Stealth Rootkit', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(53, 'NORMAL', 'NORMAL', 'AI Rogue', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(54, 'NORMAL', 'NORMAL', 'Quantum Anomaly', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(55, 'NORMAL', 'NORMAL', 'Corrupted AI', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(56, 'NORMAL', 'NORMAL', 'Firewall Drake', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(57, 'NORMAL', 'NORMAL', 'Data Golem', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(58, 'NORMAL', 'NORMAL', 'Code Wraith', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(59, 'NORMAL', 'NORMAL', 'Code Librarian', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(60, 'NORMAL', 'NORMAL', 'Data Archivist', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(61, 'NORMAL', 'NORMAL', 'Network Cartographer', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(62, 'NORMAL', 'NORMAL', 'Protocol Droid', NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -166,7 +179,25 @@ INSERT INTO `equipment` (`id`, `name`, `type`, `rarity`, `statBonus`, `specialEf
 (28, 'Ancient Relic', 'ITEM', 'RARE', 0, 'Quest reward'),
 (29, 'Energy Drink', 'ITEM', 'COMMON', 0, 'Heal 50 HP'),
 (30, 'Caffeine Shot', 'ITEM', 'COMMON', 0, 'Restore 50 Mana'),
-(31, 'Ultimate Potion', 'ITEM', 'EPIC', 0, 'Max HP restore');
+(31, 'Ultimate Potion', 'ITEM', 'EPIC', 0, 'Max HP restore'),
+(32, 'Blade of Null Pointers', 'WEAPON', 'EPIC', 16, 'Ignores a portion of enemy defense'),
+(33, 'Zero-Day Blade', 'WEAPON', 'LEGENDARY', 22, 'Deals bonus damage on first strike'),
+(34, 'Jacket of Holding', 'ARMOR', 'RARE', 10, 'Increases inventory capacity'),
+(35, 'Aegis of the Kernel', 'ARMOR', 'EPIC', 17, 'Reduces damage from critical hits'),
+(36, 'Root''s Embrace', 'ARMOR', 'LEGENDARY', 22, 'Grants immunity to stun effects'),
+(37, 'Elixir of Strength', 'ITEM', 'RARE', 0, 'Temporarily boosts strength'),
+(38, 'Elixir of Fortitude', 'ITEM', 'RARE', 0, 'Temporarily boosts defense'),
+(39, 'Scroll of Rootkit', 'ITEM', 'EPIC', 0, 'Casts a powerful debuff on an enemy'),
+(40, 'Poisoned Arrows', 'ITEM', 'UNCOMMON', 0, 'Applies poison effect to bow attacks'),
+(41, 'Smoke Bomb', 'ITEM', 'UNCOMMON', 0, 'Increases chance to flee from combat'),
+(42, 'Tome of Restoration', 'ITEM', 'RARE', 0, 'Teaches a powerful healing spell'),
+(43, 'Fish Steak', 'ITEM', 'COMMON', 0, 'Restores a small amount of HP'),
+(44, 'Data Berry', 'ITEM', 'COMMON', 0, 'Restores a small amount of Mana'),
+(45, 'Byte-sized Snack', 'ITEM', 'COMMON', 0, 'Restores a small amount of HP and Mana'),
+(46, 'Lockpick', 'ITEM', 'UNCOMMON', 0, 'Allows opening of locked chests'),
+(47, 'Corrupted Core', 'ITEM', 'RARE', 0, 'A rare crafting material'),
+(48, 'Encrypted Key', 'ITEM', 'RARE', 0, 'A key for a specific, encrypted location'),
+(49, 'Debug Log', 'ITEM', 'COMMON', 0, 'A cryptic log file that might contain a clue');
 
 -- --------------------------------------------------------
 
@@ -569,13 +600,13 @@ ALTER TABLE `statuseffect`
 -- AUTO_INCREMENT for table `enemy`
 --
 ALTER TABLE `enemy`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `equipment`
 --
 ALTER TABLE `equipment`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `faction`
