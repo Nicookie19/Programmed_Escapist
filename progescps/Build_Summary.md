@@ -38,23 +38,20 @@ java -cp src progescps.TurnBased_RPG
   - Defense: High
   - Attack: Medium
 - **Abilities**:
-  - Debug (20 mana): Analyze enemy and reveal weaknesses
-    - Reduces enemy defense by 20%
-    - Duration: 3 turns
+  - Debug (20 mana): Analyze enemy weaknesses
+    - Deals 1.5x base damage
     - Cooldown: 4 turns
-  - Patch (30 mana): Self-heal and fortification
-    - Heals 40 HP
-    - Increases defense by 25%
-    - Duration: 2 turns
+  - Patch (25 mana): Self-heal
+    - Heals 20% of max HP
     - Cooldown: 5 turns
-  - Inspect (25 mana): Deep system analysis
-    - Reveals all enemy stats
-    - Shows enemy skill cooldowns
-    - Increases critical hit chance by 15%
+  - Inspect (15 mana): Reveal enemy information
+    - Deals base damage
     - Cooldown: 3 turns
-- **Passive**: Error Handler
-  - 10% chance to automatically mitigate damage
-  - Reduces critical hit damage taken by 20%
+  - Breakpoint (30 mana): Set a breakpoint
+    - Deals 2x base damage
+    - Stuns enemy for next turn
+- **Passive**: Auto-heal on kill
+  - Regenerates 10% of max HP when enemy dies
 - **Best Against**: Complex bugs, System errors
 - **Weakness**: Rapid attack patterns
 
@@ -66,132 +63,123 @@ java -cp src progescps.TurnBased_RPG
   - Attack: Very High
   - Defense: Low
 - **Abilities**:
-  - Exploit (35 mana): High damage single target
-    - Deals 150% base damage
-    - 25% chance to apply vulnerability
-    - Cooldown: 3 turns
-  - DDOS (40 mana): Area damage over time
-    - Deals 60% damage per turn
-    - Affects all enemies
-    - Duration: 3 turns
-    - Cooldown: 6 turns
-  - Rootkit (30 mana): Stealth damage amplifier
-    - Plants hidden damage amplifier
-    - +30% damage for 3 turns
-    - Can stack up to 2 times
+  - Vulnerability Exploit (25 mana): Exploit vulnerability
+    - Deals 2x base damage
+    - Applies Defense Down (0.8x defense, 2 turns)
+    - Cooldown: 5 turns
+  - Code Injection (15 mana): Inject malicious code
+    - Deals base damage
+    - Applies Bleed (5 damage per turn, 3 turns)
+  - DDoS Flood (20 mana): Flood with DDoS
+    - Deals 1.5x base damage
+    - Stuns enemy for next turn
     - Cooldown: 4 turns
-- **Passive**: Code Injection
-  - Each attack has 15% chance to apply a mini-exploit
-  - Bonus 10% damage to vulnerable targets
+  - Rootkit Installation (30 mana): Install rootkit
+    - Deals 2.5x base damage
+    - Applies Weakened (0.7x damage, 2 turns)
+    - Cooldown: 5 turns
+- **Passive**: Mana Regen & Surge
+  - Regenerates 10% of max mana per turn
+  - If mana below 20%, gains extra 10%
 - **Best Against**: Security systems
 - **Weakness**: Direct confrontation
 
 #### Tester - Sam Byte, The Bug Hunter
 - **Role**: Analyst/Support
 - **Base Stats**:
-  - HP: 200
-  - Mana: 110
+  - HP: 220
+  - Mana: 80
   - Attack: Medium
   - Defense: Medium
 - **Abilities**:
-  - Scan (25 mana): Find vulnerabilities
-    - Reveals enemy weakness
-    - Increases party accuracy by 20%
-    - Duration: 2 turns
+  - Scan (15 mana): Scan for vulnerabilities
+    - Deals base damage
+    - Applies Bug Report (5 damage per turn, 3 turns)
     - Cooldown: 3 turns
-  - Verify (30 mana): System validation
-    - Increases party defense by 25%
-    - Removes one debuff
-    - Duration: 3 turns
-    - Cooldown: 4 turns
-  - Penetration Test (35 mana): Precision strike
-    - 200% accuracy
-    - Ignores 50% of target defense
-    - Cooldown: 4 turns
-- **Passive**: Quality Assurance
-  - 20% chance to detect enemy attack pattern
-  - Bonus damage against revealed weaknesses
+  - Verify (10 mana): Bug Report
+    - Deals base damage
+    - Applies Bug Report (5 damage per turn, 3 turns)
+    - Cooldown: 3 turns
+  - Bug Report (10 mana): Report a bug
+    - Deals base damage
+    - Applies Bug Report (5 damage per turn, 3 turns)
+    - Cooldown: 3 turns
+  - Regression (15 mana): Run regression tests
+    - Deals 2x base damage
+    - Cooldown: None
+- **Passive**: Critical Boost
+  - Increased crit chance when HP above 80% (+10% crit, +5% base)
 - **Best Against**: Unpatched systems
 - **Weakness**: Overwhelming force
 
 #### Architect - Linus Kernel, The System Designer
 - **Role**: Tank/Support
 - **Base Stats**:
-  - HP: 220
-  - Mana: 90
+  - HP: 320
+  - Mana: 50
   - Defense: Very High
   - Attack: Low
 - **Abilities**:
-  - Design (30 mana): Create defensive structure
-    - Generates shield for party
-    - Absorbs 100 damage
-    - Duration: 3 turns
+  - Design (20 mana): Design a flaw
+    - Deals base damage to all enemies
+    - 20% chance to stun enemy
     - Cooldown: 5 turns
-  - Rally (35 mana): Team defense boost
-    - Increases party defense by 40%
-    - Duration: 2 turns
+  - Build (0 mana): Normal attack
+  - Rally (15 mana): Rally the team
+    - Boosts damage by 50% for next attack
     - Cooldown: 4 turns
-  - Unyielding Spirit (50 mana): Ultimate survival
-    - Prevents death for 1 turn
-    - Heals 30% max HP if surviving
-    - Cooldown: 8 turns
-- **Passive**: Solid Foundation
-  - Increases party max HP by 10%
-  - Reduces structure decay by 20%
+  - Demolish (20 mana): Demolish defenses
+    - Deals 2x base damage
+- **Passive**: Unyielding Spirit
+  - Survives lethal damage once per combat (leaves at 1 HP)
 - **Best Against**: Structural threats
 - **Weakness**: Agile enemies
 
 #### PenTester - Vex Shadowblade, The Silent Intruder
 - **Role**: Stealth/DPS
 - **Base Stats**:
-  - HP: 160
-  - Mana: 100
+  - HP: 200
+  - Mana: 60
   - Attack: High
   - Defense: Low
 - **Abilities**:
-  - Probe (20 mana): Analyze defenses
-    - Reveals target weakpoints
-    - Increases critical chance by 30%
-    - Duration: 2 turns
+  - Probe (15 mana): Use Probe
+    - Deals base damage
     - Cooldown: 3 turns
-  - Breach (40 mana): Defense penetration
-    - Ignores target armor
-    - 175% base damage
+  - Breach (20 mana): Use Breach
+    - Deals 1.5x base damage
     - Cooldown: 4 turns
-  - Stealth (35 mana): Tactical advantage
-    - 80% evasion rate
-    - +50% critical damage
-    - Duration: 2 turns
+  - Stealth (15 mana): Use Stealth
+    - Becomes untargetable for next enemy attack
     - Cooldown: 5 turns
-- **Passive**: Backdoor
-  - 15% chance to strike twice
-  - Bonus damage from stealth
+  - Exploit Chain (25 mana): Use Exploit Chain
+    - Deals 2x base damage
+- **Passive**: Evasion Mastery
+  - Chance to dodge attacks
 - **Best Against**: High security targets
 - **Weakness**: Sustained combat
 
 #### Support - Elara Lightbringer, The System Maintainer
 - **Role**: Healer/Buffer
 - **Base Stats**:
-  - HP: 190
-  - Mana: 130 (Highest base mana)
+  - HP: 240
+  - Mana: 100
   - Attack: Low
   - Defense: Medium
 - **Abilities**:
-  - Patch (30 mana): Single target heal
-    - Restores 120 HP
-    - Removes one debuff
+  - Patch (20 mana): Apply Patch
+    - Deals 1.5x base damage to all enemies
+    - Cooldown: 4 turns
+  - Heal (0 mana): Normal attack
+  - Buffer (15 mana): Cast Buffer
+    - Reduces damage taken by 50% next turn
     - Cooldown: 3 turns
-  - Buffer (35 mana): Party enhancement
-    - Increases party stats by 25%
-    - Duration: 3 turns
-    - Cooldown: 5 turns
-  - System Restore (50 mana): Emergency recovery
-    - Heals party for 80 HP
-    - Removes all debuffs
-    - Cooldown: 6 turns
-- **Passive**: Optimization
-  - Reduces party mana costs by 10%
-  - Healing increased by 20% on low HP targets
+  - Restore (25 mana): Cast Restore
+    - Heals 40% of max HP
+    - 20% chance to reset cooldown of Patch or Buffer
+- **Passive**: Regeneration & Code Grace
+  - Regenerates 5% of max HP per turn
+  - 20% chance to reset Patch or Buffer cooldown on Restore
 - **Best Against**: War of attrition
 - **Weakness**: Solo combat
 
@@ -752,6 +740,34 @@ ProgEscps/
 ├── saves/                  # Save files
 └── resources/             # Game assets
 ```
+
+### Database Design
+
+#### Schema Overview
+The game uses a MySQL database with a comprehensive schema supporting all game systems. The database is structured to separate static game content from dynamic player data.
+
+#### Data Population Strategy
+- **Pre-populated Tables (Static Game Assets)**: Core game content is pre-loaded into the database to ensure consistent gameplay experience:
+  - `enemy`: All enemy types, stats, and behaviors (62 predefined enemies)
+  - `equipment`: Weapons, armor, and items with their properties (49 equipment items)
+  - `location`: Game world locations with descriptions and environmental effects (30 locations)
+  - `faction`: Faction information and relationships (10 factions)
+  - `locationfeature`: Location-specific features and points of interest
+
+- **Empty Tables (Dynamic Player Data)**: Player-specific data starts empty and is populated during gameplay:
+  - `hero`: Player character data and progression
+  - `inventoryitem`: Player inventory and item management
+  - `quest`: Active and completed quests
+  - `achievement`: Player achievements and unlocks
+  - `heroequipment`: Equipped items and bonuses
+  - `herofaction`: Faction reputation and relationships
+  - `heroachievement`: Achievement progress tracking
+  - `questobjective`: Quest objectives and completion status
+  - `questreward`: Quest reward tracking
+  - `save_slots`: Game save data
+  - `statuseffect`: Active status effects and buffs/debuffs
+
+This design ensures that core game content remains consistent across all playthroughs while player progress and save data are managed separately.
 
 ### Build Instructions
 ```bash

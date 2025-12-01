@@ -263,9 +263,9 @@ public class GameDatabase {
         String objSql = "INSERT INTO questobjective (questId, objective, idx) VALUES (?, ?, ?)";
         String rewardSql = "INSERT INTO questreward (questId, rewardType, rewardAmount) VALUES (?, ?, ?)";
 
-        try (PreparedStatement psQuest = conn.prepareStatement(questSql, Statement.RETURN_GENERATED_KEYS); PreparedStatement psObj = conn.prepareStatement(objSql); PreparedStatement psReward = conn.prepareStatement(rewardSql)) {
+        try (PreparedStatement psQuest = conn.prepareStatement(questSql, Statement.RETURN_GENERATED_KEYS); PreparedStatement psObj = conn.prepareStatement(objSql); PreparedStatement psReward = conn.prepareStatement(rewardSql)) { //This is a QuestManager.Quest
 
-            for (Quest quest : questManager.getQuests()) {
+            for (QuestManager.Quest quest : questManager.getQuests()) {
                 // 1. Save Quest
                 psQuest.setString(1, quest.getName());
                 psQuest.setString(2, quest.getDescription());
@@ -284,10 +284,10 @@ public class GameDatabase {
                 }
 
                 // 2. Save Objectives
-                List<String> objectives = quest.getObjectives();
+                List<QuestManager.QuestObjective> objectives = quest.getObjectives();
                 for (int i = 0; i < objectives.size(); i++) {
                     psObj.setInt(1, questId);
-                    psObj.setString(2, objectives.get(i));
+                    psObj.setString(2, objectives.get(i).getStatus()); // Use getStatus() for the description
                     psObj.setInt(3, i);
                     psObj.addBatch();
                 }
@@ -453,8 +453,8 @@ public class GameDatabase {
     /**
      * Loads all quests, objectives, and rewards for a hero.
      */
-    public List<Quest> loadQuests(int heroId) throws SQLException {
-        List<Quest> quests = new ArrayList<>();
+    public List<QuestManager.Quest> loadQuests(int heroId) throws SQLException {
+        List<QuestManager.Quest> quests = new ArrayList<>();
         String sql = "SELECT * FROM quest WHERE heroId = ?";
         String objSql = "SELECT objective FROM questobjective WHERE questId = ? ORDER BY idx";
         String rewardSql = "SELECT rewardType, rewardAmount FROM questreward WHERE questId = ?";
@@ -485,7 +485,7 @@ public class GameDatabase {
                     }
 
                     // 3. Re-create Quest object
-                    Quest quest = new Quest(
+                    QuestManager.Quest quest = new QuestManager.Quest(
                             rsQuest.getString("name"),
                             rsQuest.getString("description"),
                             objectives,

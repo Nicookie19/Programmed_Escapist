@@ -82,10 +82,6 @@ public class GameManager {
         inCombat = combat;
     }
 
-    private static class GameStopException extends RuntimeException {
-        private static final long serialVersionUID = 1L;
-    }
-
     /**
      * Default constructor for GameManager.
      */
@@ -1620,15 +1616,9 @@ public class GameManager {
                         System.out.println(Color.colorize("HARDCORE MODE: Your character has died permanently!", Color.RED));
                         System.out.println(Color.colorize("Game Over - Your journey ends here.", Color.RED));
                         deleteAllSaveFiles();
-                        System.exit(0);
+                        throw new GameStopException("Permadeath"); // Use exception to exit combat loop cleanly
                     } else {
-                        System.out.println(Color.colorize("Game Over - Returning to main menu.", Color.YELLOW));
-                        this.enemy = null;
-                        this.player = null;
-                        if (ui != null) {
-                            ui.showMainMenu();
-                        }
-                        throw new GameStopException(); // Stop the game thread
+                        throw new GameStopException("Defeated"); // Signal non-permadeath defeat
                     }
                 }
 
@@ -1654,26 +1644,69 @@ public class GameManager {
                         System.out.println(Color.colorize("HARDCORE MODE: Your character has died permanently!", Color.RED));
                         System.out.println(Color.colorize("Game Over - Your journey ends here.", Color.RED));
                         deleteAllSaveFiles();
-                        System.exit(0); // Exit the game
+                        throw new GameStopException("Permadeath"); // Use exception to exit combat loop cleanly
                     } else {
-                        System.out.println(Color.colorize("Game Over - Returning to main menu.", Color.YELLOW));
-                        System.out.println("Press Enter to continue...");
-                        scan.nextLine();
-                        this.enemy = null;
-                        // player is set to null, which is correct.
-                        this.player = null;
-                        if (ui != null) {
-                            ui.showMainMenu();
-                        }
-                        throw new GameStopException();
+                        throw new GameStopException("Defeated"); // Signal non-permadeath defeat
                     }
                 }
             }
             // After loop, if enemy is dead, handle victory
             if (!enemy.isAlive()) handleVictory(player, combatLog, enemy);
         } catch (GameStopException e) {
-            System.out.println(Color.colorize("Combat interrupted by request. Exiting combat.", Color.YELLOW));
-            return;
+            // If the player was defeated (permadeath or normal), prompt the user
+            // first (console or GUI), then perform cleanup and rethrow so the
+            // exception bubbles up to `startGamePostSelection` and terminates the
+            // game thread cleanly.
+            if ("Defeated".equals(e.getMessage()) || "Permadeath".equals(e.getMessage())) {
+                String enemyName = (enemy != null) ? enemy.getCurrentName() : "the enemy";
+                boolean isPermadeath = "Permadeath".equals(e.getMessage());
+                String baseMsg = "You have been defeated by " + enemyName + "...";
+                String extra = isPermadeath ? "\nHARDCORE MODE: Your character has died permanently!" : "";
+                String promptMsg = baseMsg + extra + "\nPress OK (GUI) or Enter (console) to return to the main menu.";
+
+                // Prompt via GUI if available, otherwise prompt on console
+                if (ui != null) {
+                    try {
+                        SwingUtilities.invokeAndWait(() -> JOptionPane.showMessageDialog(null,
+                                promptMsg,
+                                "Game Over",
+                                JOptionPane.INFORMATION_MESSAGE));
+                    } catch (Exception ex) {
+                        // If invokeAndWait fails, fall back to printing a message
+                        System.out.println(Color.colorize(promptMsg, Color.YELLOW));
+                    }
+                } else {
+                    System.out.println(Color.colorize(baseMsg + extra, Color.RED));
+                    System.out.println("Press Enter to continue...");
+                    try {
+                        scan.nextLine(); // wait for user
+                    } catch (Exception ignored) {
+                    }
+                }
+
+                // After the user acknowledged, perform cleanup
+                setCombat(false);
+                setMoving(false);
+
+                if (isPermadeath) {
+                    deleteAllSaveFiles();
+                }
+
+                // Null out current combatants
+                this.enemy = null;
+                this.player = null;
+
+                // Ensure UI is returned to main menu on the EDT if available
+                if (ui != null) {
+                    SwingUtilities.invokeLater(() -> ui.showMainMenu());
+                }
+
+                // Rethrow so outer handlers stop the running game thread
+                throw e;
+            } else {
+                System.out.println(Color.colorize("Combat interrupted. Exiting combat.", Color.YELLOW));
+                return;
+            }
         }
 
         if (player != null && player.checkLevelUp()) {
@@ -2522,11 +2555,11 @@ public class GameManager {
         printCenteredLine("Quest Log", uiTheme.getQuestColor());
         printBorder("divider");
 
-        List<Quest> active = questManager.getActiveQuests();
+        List<QuestManager.Quest> active = questManager.getActiveQuests();
         if (active.isEmpty()) {
             printCenteredLine("No active quests.", Color.GRAY);
         } else {
-            for (Quest quest : active) {
+            for (QuestManager.Quest quest : active) {
                 printCenteredLine(quest.getName(), uiTheme.getTextColor());
                 printCenteredLine(" - " + quest.getCurrentObjective(), Color.GRAY);
             }
@@ -2534,11 +2567,11 @@ public class GameManager {
 
         printBorder("divider");
         printCenteredLine("Completed", uiTheme.getSecondaryColor());
-        List<Quest> completed = questManager.getCompletedQuests();
+        List<QuestManager.Quest> completed = questManager.getCompletedQuests();
         if (completed.isEmpty()) {
             printCenteredLine("No completed quests.", Color.GRAY);
         } else {
-            for (Quest quest : completed) {
+            for (QuestManager.Quest quest : completed) {
                 printCenteredLine(quest.getName(), Color.GRAY);
             }
         }

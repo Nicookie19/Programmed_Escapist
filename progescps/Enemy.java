@@ -174,6 +174,14 @@ public class Enemy implements Serializable {
         return false;
     }
 
+    public void provoke() {
+        if (isDocile() && hostileOverride == null) {
+            if (random.nextInt(100) < 40) { // 40% chance to turn hostile
+                System.out.println(Color.colorize(currentName + " has been corrupted by your actions and turns hostile!", Color.RED));
+                setHostile(true);
+            }
+        }
+    }
     public void receiveDamage(int damage) {
         hp -= damage;
         if (hp < 0) hp = 0;
@@ -322,6 +330,8 @@ public class Enemy implements Serializable {
             return;
         }
 
+        updateStatusEffects();
+
         applyPassiveEffects(player);
 
         if (gluttonyCooldown > 0) {
@@ -407,6 +417,19 @@ public class Enemy implements Serializable {
                 System.out.println("Enemy (" + currentName + ") uses Data Corruption and deals " + corruptionDmg + " damage!");
                 player.receiveDamage(corruptionDmg);
                 break;
+            case "Encryption Break":
+                int baseBreak = random.nextInt(10) + 10;
+                int breakDmg = Combat.calculateDamage(baseBreak, this, player, 0);
+                System.out.println("Enemy (" + currentName + ") uses Encryption Break, dealing " + breakDmg + " damage and lowering your defenses!");
+                player.receiveDamage(breakDmg);
+                // This is a placeholder for applying a defense-down status effect on the player.
+                // To fully implement, a status effect system on the Hero would be needed.
+                break;
+            case "Privilege Escalation":
+                System.out.println("Enemy (" + currentName + ") uses Privilege Escalation, boosting its next attack!");
+                nextAttackIsDoubleDamage = true;
+                // This attack takes the enemy's turn.
+                return;
             case "Memory Leak":
                 int baseLeak = random.nextInt(15) + 15;
                 int leakDmg = Combat.calculateDamage(baseLeak, this, player, 0);
@@ -484,6 +507,10 @@ public class Enemy implements Serializable {
                     System.out.println("Enemy (" + currentName + ") attacks for " + dmg + " damage!");
                 }
                 player.receiveDamage(dmg);
+                if (!player.isAlive()) {
+                    System.out.println("You have been defeated!");
+                    return; 
+                }
                 break;
         }
 

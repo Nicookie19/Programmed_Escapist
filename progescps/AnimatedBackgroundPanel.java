@@ -17,8 +17,8 @@ import javax.swing.Timer;
  */
 public class AnimatedBackgroundPanel extends JPanel {
 
-    private static final int PARTICLE_COUNT = 150;
-    private static final int TIMER_DELAY = 40; // Approx 25 FPS
+    private static final int PARTICLE_COUNT = 250;
+    private static final int TIMER_DELAY = 30; // Approx 25 FPS
     private static final Color BACKGROUND_COLOR = new Color(25, 25, 35);
 
     private final List<Particle> particles;
