@@ -224,6 +224,34 @@ Key Value:
 - Ant build system
 
 ### 2.3 Recent Improvements and Changes
+#### Latest Build (2025-12-01)
+- **Defeat Handling**: Game now properly ends when the player dies and shows a prompt before returning to the main menu. See `GameManager.java` (defeat handling and prompt logic).
+- **Friendly NPCs**: New NPC roles added — `Data Sage`, `Patch Vendor`, `Quantum Oracle`, `Bitwise Healer`, `Glitch Tinkerer`, `Memory Merchant` — each offering unique services (buffs, quests, healing, repairs, rare items). Implemented in `GameManager.java` (`interactWithDocileNPC`).
+- **New Items & Equipment**: Added several new items and weapons such as `Neon Katar`, `Packet Cleaver`, `Server Gardens Seed`, `Ancient Coin`, `Energy Bar`, `Tinker's Toolkit`, and more. `Equipment.Type` now includes `ITEM`. See `EquipmentManager.java` and `Equipment.java`.
+- **Item Effects**: Special-use effects implemented for seeds, patches, energy bars, toolkits, and coins in `GameManager.java` (`equipOrUseItem`).
+- **Rare Drops**: Random discoveries include a 5% chance to find a rare/legendary item from the expanded pool.
+- **Combat Improvements**: Improved combat with enemy dodge mechanics and balance tweaks in `Combat.java`.
+- **Content Expansion**: Expanded enemy and friendly NPC name pools and variety in `Enemy.java`.
+- **Database/Schema**: SQL schema reviewed for consistency with code; no automatic seed save was added. See project SQL dump for schema details.
+
+**How to test these changes quickly**
+- Compile & run from project root (zsh/macOS):
+```bash
+javac -d build/classes $(find src -name "*.java")
+java -cp build/classes progescps.TurnBased_RPG
+```
+- In the game: visit a town to interact with friendly NPCs, buy/use `Server Gardens Seed` or `Patch of Restoration`, and explore to trigger discoveries (rare drops appear occasionally).
+
+**Files touched in this update**
+- `GameManager.java` — defeat prompt, NPC interactions, item use, random discovery/rare drops
+- `EquipmentManager.java` — new items/equipment entries
+- `Equipment.java` — new `ITEM` type and item display logic
+- `Combat.java` — dodge and combat improvements
+- `Enemy.java` — expanded name pools
+
+**Next steps**
+- Run the game and report any runtime issues or desired behavior changes.
+- Optionally, I can refactor the minor lint/style warnings present in `GameManager.java` and other files.
 
 #### UI Enhancements
 - Fixed sprite visibility issues for all character classes

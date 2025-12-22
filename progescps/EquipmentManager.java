@@ -52,6 +52,14 @@ public class EquipmentManager implements Serializable {
         addEquipment("Aegis of the Kernel", Equipment.Type.ARMOR, Equipment.Rarity.EPIC, 17, "Reduces damage from critical hits");
         addEquipment("Quantum Armor", Equipment.Type.ARMOR, Equipment.Rarity.LEGENDARY, 20, "15% chance to regenerate HP each turn");
         addEquipment("Root's Embrace", Equipment.Type.ARMOR, Equipment.Rarity.LEGENDARY, 22, "Grants immunity to stun effects");
+        // New weapons and items added for content expansion
+        addEquipment("Neon Katar", Equipment.Type.WEAPON, Equipment.Rarity.UNCOMMON, 9, "Increases crit chance by 5%");
+        addEquipment("Packet Cleaver", Equipment.Type.WEAPON, Equipment.Rarity.RARE, 14, "Weakens enemy defenses by 5 on hit");
+        addEquipment("Mirror Shield", Equipment.Type.ARMOR, Equipment.Rarity.RARE, 12, "Chance to reflect 10% damage back to attacker");
+        addEquipment("Server Gardens Seed", Equipment.Type.ITEM, Equipment.Rarity.UNCOMMON, 0, "Plant to get random consumable after delay");
+        addEquipment("Ancient Coin", Equipment.Type.ITEM, Equipment.Rarity.COMMON, 0, "A curious trinket used for trading or quests");
+        addEquipment("Energy Bar", Equipment.Type.ITEM, Equipment.Rarity.COMMON, 0, "Restores small HP and Mana");
+        addEquipment("Tinker's Toolkit", Equipment.Type.ITEM, Equipment.Rarity.UNCOMMON, 0, "Used to repair broken gear or unlock special crafting recipes");
     }
     
     private void addEquipment(String name, Equipment.Type type, Equipment.Rarity rarity, int statBonus, String specialEffect) {

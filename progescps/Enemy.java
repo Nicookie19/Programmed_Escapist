@@ -227,10 +227,17 @@ public class Enemy implements Serializable {
             "Command Injector", "Cross Site", "Script Kiddie", "Black Hat",
             "Polymorphic Virus", "Stealth Rootkit", "AI Rogue", "Quantum Anomaly",
             "Corrupted AI", "Firewall Drake", "Data Golem", "Code Wraith",
+            // New creative hostile enemies
+            "Bit Bandit", "Null Specter", "Trojan Centurion", "Packet Phantom", "Glitch Revenant",
+            "Spam Hydra", "Crypto Wraith", "Kernel Marauder", "Daemon Scribe", "Overclocked Juggernaut",
+            "Malcode Djinn", "Phantom Process", "Backdoor Shade", "Bot Swarm", "Syntax Terror",
             // Friendly/Neutral
             "Firewall Guard", "Antivirus", "Debugger", "System Monitor",
             "Backup Service", "Patch Manager", "Security Scanner", "Code Librarian",
-            "Data Archivist", "Network Cartographer", "Protocol Droid"
+            "Data Archivist", "Network Cartographer", "Protocol Droid",
+            // New creative friendly NPCs
+            "Data Sage", "Patch Vendor", "Rogue AI", "Quantum Oracle", "Packet Courier",
+            "Archivist Bot", "Syntax Mentor", "Bitwise Healer", "Glitch Tinkerer", "Memory Merchant"
         };
     }
 

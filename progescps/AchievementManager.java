@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AchievementManager class to manage player achievements
+ * AchievementManager class to manage player achievements (Checked!)
  */
 public class AchievementManager implements Serializable {
     private static final long serialVersionUID = 1L;

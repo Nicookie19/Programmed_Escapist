@@ -13,11 +13,11 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
- * A panel with an animated background of floating particles.
+ * A panel with an animated background of floating particles. (Checked!)
  */
 public class AnimatedBackgroundPanel extends JPanel {
 
-    private static final int PARTICLE_COUNT = 250;
+    private static final int PARTICLE_COUNT = 300;
     private static final int TIMER_DELAY = 30; // Approx 25 FPS
     private static final Color BACKGROUND_COLOR = new Color(25, 25, 35);
 

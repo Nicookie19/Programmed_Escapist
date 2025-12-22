@@ -124,14 +124,25 @@ public class Combat {
             // Enhanced combo system with cap
             double comboMultiplier = Math.min(1 + (comboCounter * COMBO_MULTIPLIER), 2.5);
             totalDamage *= comboMultiplier;
-            
+
             // Null-safe difficulty: default to NORMAL if hero difficulty not set
             Difficulty effDiff = h.difficulty != null ? h.difficulty : Difficulty.NORMAL;
             if (random.nextInt(100) < getCriticalChance(h, effDiff)) {
                 totalDamage *= 2;
                 System.out.println(Color.colorize("Critical Hit!", Color.YELLOW));
             }
-            
+
+            // New: Dodge chance for enemies (5% base, +10% if enemy is STRONG)
+            if (defender instanceof Enemy) {
+                Enemy e = (Enemy) defender;
+                int dodgeChance = 5;
+                if (e.getTier() == Enemy.Tier.STRONG) dodgeChance += 10;
+                if (random.nextInt(100) < dodgeChance) {
+                    System.out.println(Color.colorize("Enemy dodged your attack!", Color.CYAN));
+                    return 0;
+                }
+            }
+
             // Add random variance (±10%)
             double variance = 0.9 + (random.nextDouble() * 0.2);
             totalDamage *= variance;

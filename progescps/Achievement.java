@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Achievement class to represent player achievements
+ * Achievement class to represent player achievements (Checked!)
  */
 public class Achievement implements Serializable {
     private static final long serialVersionUID = 1L;

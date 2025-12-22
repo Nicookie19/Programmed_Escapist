@@ -9,7 +9,7 @@ public class Equipment implements Serializable {
     private static final long serialVersionUID = 1L;
     
     public enum Type {
-        WEAPON, ARMOR
+        WEAPON, ARMOR, ITEM
     }
     
     public enum Rarity {

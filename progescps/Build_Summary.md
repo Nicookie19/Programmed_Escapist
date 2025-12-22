@@ -26,6 +26,16 @@ java -cp src progescps.TurnBased_RPG
 - Enhanced resource management
 - Improved save/load system
 
+### Latest Build (2025-12-01)
+- Defeat handling: game now ends correctly when the player dies and shows a prompt before returning to the main menu. See `GameManager.java` for implementation details.
+- Friendly NPCs: new specialized NPC roles (`Data Sage`, `Patch Vendor`, `Quantum Oracle`, `Bitwise Healer`, `Glitch Tinkerer`, `Memory Merchant`) that offer unique services: buffs, healing, repairs, quests, and rare items. Implemented in `GameManager.java` (`interactWithDocileNPC`).
+- Items & Equipment: new items and weapons added (e.g., `Neon Katar`, `Packet Cleaver`, `Server Gardens Seed`, `Ancient Coin`, `Energy Bar`, `Tinker's Toolkit`). `Equipment.Type` includes `ITEM`. See `EquipmentManager.java` and `Equipment.java`.
+- Item Effects: special-use logic added for seeds, patches, energy bars, toolkits, and coins in `GameManager.java` (`equipOrUseItem`).
+- Rare Drops: random discovery now has a small (5%) chance to yield a rare/legendary item from the expanded pool.
+- Combat Improvements: dodge mechanics and balance tweaks in `Combat.java`.
+- Content: expanded enemy and NPC name pools in `Enemy.java`.
+- Database: schema reviewed for consistency; no seed save was auto-created. See included SQL dump for details.
+
 ## Features
 
 ### Character Classes

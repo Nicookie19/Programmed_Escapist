@@ -44,6 +44,8 @@ public class GameManager {
     private List<Faction> availableFactions;
     private Difficulty difficulty = Difficulty.NORMAL;
     private boolean permadeathEnabled = false;
+    // Guard to ensure defeat prompt/cleanup runs exactly once per defeat
+    private boolean defeatHandled = false;
 
     private volatile boolean stopRequested = false;
     private volatile boolean gameRunning = false;
@@ -80,6 +82,51 @@ public class GameManager {
 
     protected void setCombat(boolean combat) {
         inCombat = combat;
+    }
+
+    /**
+     * Centralized defeat handling. Idempotent per-defeat via `defeatHandled`.
+     */
+    private void handlePlayerDefeat(Enemy enemy, boolean isPermadeath) {
+        if (defeatHandled) return;
+        defeatHandled = true;
+
+        setCombat(false);
+        setMoving(false);
+
+        String enemyName = (enemy != null) ? enemy.getCurrentName() : "the enemy";
+        String baseMsg = "You have been defeated by " + enemyName + "...";
+        String extra = isPermadeath ? "\nHARDCORE MODE: Your character has died permanently!" : "";
+        String promptMsg = baseMsg + extra + "\nPress OK (GUI) or Enter (console) to return to the main menu.";
+
+        if (ui != null) {
+            try {
+                SwingUtilities.invokeAndWait(() -> JOptionPane.showMessageDialog(null,
+                        promptMsg,
+                        "Game Over",
+                        JOptionPane.INFORMATION_MESSAGE));
+            } catch (Exception ex) {
+                System.out.println(Color.colorize(promptMsg, Color.YELLOW));
+            }
+        } else {
+            System.out.println(Color.colorize(baseMsg + extra, Color.RED));
+            System.out.println("Press Enter to continue...");
+            try {
+                scan.clearPending();
+                scan.nextLine();
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (isPermadeath) {
+            deleteAllSaveFiles();
+        }
+
+        this.enemy = null;
+        this.player = null;
+        if (ui != null) {
+            SwingUtilities.invokeLater(() -> ui.showMainMenu());
+        }
     }
 
     /**
@@ -536,6 +583,8 @@ public class GameManager {
 
             // mark that we just loaded a save so startGamePostSelection can skip prompts
             this.justLoaded = true;
+            // reset defeat handler for a fresh session
+            this.defeatHandled = false;
 
             // Success!
         } catch (SQLException | IOException e) {
@@ -618,12 +667,35 @@ public class GameManager {
     private void initializeWorld() {
         worldMap = new HashMap<>();
 
-        Location centralServer = new Location("Central Server Hub",
-                "A vast data center with interconnected servers, home to programmers and the mighty Hackers Alliance.", 1, true,
-                new String[]{"Virus", "Trojan", "Malware"});
-        centralServer.addFeature("Hackers Den");
-        centralServer.addFeature("Black Market");
-        worldMap.put("Central Server Hub", centralServer);
+
+        Location neonPlaza = new Location("Neon Plaza",
+            "A bustling cyber-metropolis with glowing billboards and digital street vendors.", 2, true,
+            new String[]{"Script Kiddie", "Botnet", "Phishing Scam"});
+        neonPlaza.addFeature("Neon Market");
+        neonPlaza.addFeature("Packet Arcade");
+        worldMap.put("Neon Plaza", neonPlaza);
+
+        Location quantumVault = new Location("Quantum Vault",
+            "A mysterious, high-security server farm rumored to store the world's most valuable data.", 5, false,
+            new String[]{"Quantum Anomaly", "Corrupted AI", "Firewall Drake"});
+        quantumVault.addFeature("Vault Core");
+        quantumVault.addFeature("Quantum Gate");
+        quantumVault.setEnvironmentalEffect("Quantum Flux");
+        worldMap.put("Quantum Vault", quantumVault);
+
+        Location serverGardens = new Location("Server Gardens",
+            "A tranquil, overgrown server park where friendly AI tend to digital flora.", 1, true,
+            new String[]{"Bug", "Worm", "Data Golem"});
+        serverGardens.addFeature("Garden Market");
+        serverGardens.addFeature("Botanical Lab");
+        worldMap.put("Server Gardens", serverGardens);
+
+        Location rogueHub = new Location("Rogue Hub",
+            "A shadowy underground network where hackers and outcasts gather.", 3, true,
+            new String[]{"Black Hat", "Exploit Kit", "Stealth Rootkit"});
+        rogueHub.addFeature("Hacker's Bar");
+        rogueHub.addFeature("Secret Exchange");
+        worldMap.put("Rogue Hub", rogueHub);
 
         Location darkWeb = new Location("Dark Web Forest",
                 "A dense network shrouded in encryption, hiding cybercriminals and data smugglers.", 2, true,
@@ -1046,6 +1118,8 @@ public class GameManager {
     private void startGameWithChoice(int choice) {
         gameRunning = true;
         stopRequested = false;
+        // reset defeat handler for a fresh run
+        defeatHandled = false;
 
         // resetForNewGame() is called by the UI/console before this
         // difficulty/permadeath are set by the UI/console before this
@@ -1607,19 +1681,9 @@ public class GameManager {
                 enemy.updateStatusEffects();
 
                 if (player.hp <= 0) {
-                    setCombat(false);
-                    setMoving(false);
-                    combatLog.add("Defeat! You have been slain by the " + enemy.getCurrentName() + "...");
-                    System.out.println(Color.colorize("You have been defeated by the " + enemy.getCurrentName() + "...", Color.RED));
-
-                    if (permadeathEnabled) {
-                        System.out.println(Color.colorize("HARDCORE MODE: Your character has died permanently!", Color.RED));
-                        System.out.println(Color.colorize("Game Over - Your journey ends here.", Color.RED));
-                        deleteAllSaveFiles();
-                        throw new GameStopException("Permadeath"); // Use exception to exit combat loop cleanly
-                    } else {
-                        throw new GameStopException("Defeated"); // Signal non-permadeath defeat
-                    }
+                    boolean isPermadeath = permadeathEnabled;
+                    handlePlayerDefeat(enemy, isPermadeath);
+                    throw new GameStopException(isPermadeath ? "Permadeath" : "Defeated");
                 }
 
                 displayCombatStatus(player, enemy, combatLog);
@@ -1635,19 +1699,9 @@ public class GameManager {
                 }
 
                 if (player.hp <= 0) {
-                    setCombat(false);
-                    setMoving(false);
-                    combatLog.add("Defeat! You have been slain by the " + enemy.getCurrentName() + "...");
-                    System.out.println(Color.colorize("You have been defeated by the " + enemy.getCurrentName() + "...", Color.RED));
-
-                    if (permadeathEnabled) {
-                        System.out.println(Color.colorize("HARDCORE MODE: Your character has died permanently!", Color.RED));
-                        System.out.println(Color.colorize("Game Over - Your journey ends here.", Color.RED));
-                        deleteAllSaveFiles();
-                        throw new GameStopException("Permadeath"); // Use exception to exit combat loop cleanly
-                    } else {
-                        throw new GameStopException("Defeated"); // Signal non-permadeath defeat
-                    }
+                    boolean isPermadeath = permadeathEnabled;
+                    handlePlayerDefeat(enemy, isPermadeath);
+                    throw new GameStopException(isPermadeath ? "Permadeath" : "Defeated");
                 }
             }
             // After loop, if enemy is dead, handle victory
@@ -1658,49 +1712,11 @@ public class GameManager {
             // exception bubbles up to `startGamePostSelection` and terminates the
             // game thread cleanly.
             if ("Defeated".equals(e.getMessage()) || "Permadeath".equals(e.getMessage())) {
-                String enemyName = (enemy != null) ? enemy.getCurrentName() : "the enemy";
+                // If defeat wasn't already handled by the immediate combat site, handle it now.
                 boolean isPermadeath = "Permadeath".equals(e.getMessage());
-                String baseMsg = "You have been defeated by " + enemyName + "...";
-                String extra = isPermadeath ? "\nHARDCORE MODE: Your character has died permanently!" : "";
-                String promptMsg = baseMsg + extra + "\nPress OK (GUI) or Enter (console) to return to the main menu.";
-
-                // Prompt via GUI if available, otherwise prompt on console
-                if (ui != null) {
-                    try {
-                        SwingUtilities.invokeAndWait(() -> JOptionPane.showMessageDialog(null,
-                                promptMsg,
-                                "Game Over",
-                                JOptionPane.INFORMATION_MESSAGE));
-                    } catch (Exception ex) {
-                        // If invokeAndWait fails, fall back to printing a message
-                        System.out.println(Color.colorize(promptMsg, Color.YELLOW));
-                    }
-                } else {
-                    System.out.println(Color.colorize(baseMsg + extra, Color.RED));
-                    System.out.println("Press Enter to continue...");
-                    try {
-                        scan.nextLine(); // wait for user
-                    } catch (Exception ignored) {
-                    }
+                if (!defeatHandled) {
+                    handlePlayerDefeat(enemy, isPermadeath);
                 }
-
-                // After the user acknowledged, perform cleanup
-                setCombat(false);
-                setMoving(false);
-
-                if (isPermadeath) {
-                    deleteAllSaveFiles();
-                }
-
-                // Null out current combatants
-                this.enemy = null;
-                this.player = null;
-
-                // Ensure UI is returned to main menu on the EDT if available
-                if (ui != null) {
-                    SwingUtilities.invokeLater(() -> ui.showMainMenu());
-                }
-
                 // Rethrow so outer handlers stop the running game thread
                 throw e;
             } else {
@@ -2027,6 +2043,14 @@ public class GameManager {
             questManager.updateQuest("Find a Lost Relic for " + loc.name, player);
         }
 
+        // Add rare drop chance
+        if (random.nextFloat() < 0.05f) { // 5% chance for legendary/epic drop
+            String[] rareDrops = {"Quantum Armor", "Compiler's Hammer", "Packet Cleaver", "Patch of Restoration", "Server Gardens Seed", "Blade of Null Pointers", "Aegis of the Kernel", "Debugger's Wand"};
+            String rare = rareDrops[random.nextInt(rareDrops.length)];
+            player.addItem(rare, 1.0f);
+            System.out.println(Color.colorize("RARE FIND! You discovered a " + rare + "!", Color.PURPLE));
+            return;
+        }
         String[] loot = {"gold", "potion", "weapon", "armor", "food", "misc"};
         String found = loot[random.nextInt(loot.length)];
 
@@ -2056,18 +2080,19 @@ public class GameManager {
         } else if (found.equals("weapon")) {
             String[] classWeapons = player instanceof Debugger ? new String[]{
                 "Iron Sword", "Steel Sword", "Mithril Sword", "Elven Sword", "Glass Sword",
-                "Daedric Sword", "Dragonbone Sword", "Dawnbreaker", "Chillrend", "Dragonbane"
+                "Daedric Sword", "Dragonbone Sword", "Dawnbreaker", "Chillrend", "Dragonbane",
+                "Blade of Null Pointers", "Zero-Day Blade", "Debugger's Wand", "Compiler's Hammer", "Neon Katar", "Packet Cleaver"
             }
                     : player instanceof Hacker ? new String[]{
                         "Fire Staff", "Ice Wand", "Staff of Fireballs", "Staff of Ice Storms",
-                        "Staff of Healing", "Wand of Mana", "Orb of Elements"
+                        "Staff of Healing", "Wand of Mana", "Orb of Elements", "Debugger's Wand"
                     }
                     : player instanceof Tester ? new String[]{
                         "Hunting Bow", "Longbow", "Composite Bow", "Elven Bow", "Glass Bow",
                         "Daedric Bow", "Dragonbone Bow"
                     }
                     : player instanceof Architect ? new String[]{
-                        "Warhammer", "Battleaxe", "Mace", "Flail"
+                        "Warhammer", "Battleaxe", "Mace", "Flail", "Compiler's Hammer"
                     }
                     : player instanceof PenTester ? new String[]{
                         "Iron Dagger", "Steel Dagger", "Mithril Dagger", "Elven Dagger", "Glass Dagger",
@@ -2081,12 +2106,12 @@ public class GameManager {
             System.out.println(Color.colorize("You found a " + weapon + "!", getItemRarity(weapon)));
         } else if (found.equals("armor")) {
             String[] classNames = player instanceof Debugger ? new String[]{
-                "Plate Armor", "Dragonbone Armor"
-            } : player instanceof Hacker ? new String[]{"Robe of Protection", "Archmage Robes"
+                "Plate Armor", "Dragonbone Armor", "Quantum Armor", "Aegis of the Kernel"
+            } : player instanceof Hacker ? new String[]{"Robe of Protection", "Archmage Robes", "Encryption Plate"
             } : player instanceof Tester ? new String[]{
-                "Leather Armor", "Elven Armor"
+                "Leather Armor", "Elven Armor", "Jacket of Holding"
             } : player instanceof Architect ? new String[]{
-                "Chainmail", "Dragonscale Armor"
+                "Chainmail", "Dragonscale Armor", "Firewall Shield"
             } : player instanceof PenTester ? new String[]{
                 "Cloak of Shadows", "Nightshade Cloak"
             } : new String[]{"Robe of Protection", "Holy Shroud"};
@@ -2097,7 +2122,7 @@ public class GameManager {
             List<String> foods = new ArrayList<>();
             try (Connection conn = GameDatabase.getConnection();
                  Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT name FROM equipment WHERE type = 'ITEM' AND (name LIKE '%Apple%' OR name LIKE '%Loaf%' OR name LIKE '%Wheel%' OR name LIKE '%Meat%' OR name LIKE '%Stew%' OR name LIKE '%Steak%' OR name LIKE '%Berry%' OR name LIKE '%Snack%')")) {
+                 ResultSet rs = stmt.executeQuery("SELECT name FROM equipment WHERE type = 'ITEM' AND (name LIKE '%Apple%' OR name LIKE '%Loaf%' OR name LIKE '%Wheel%' OR name LIKE '%Meat%' OR name LIKE '%Stew%' OR name LIKE '%Steak%' OR name LIKE '%Berry%' OR name LIKE '%Snack%' OR name LIKE '%Energy Bar%')")) {
                 while (rs.next()) {
                     foods.add(rs.getString("name"));
                 }
@@ -2264,21 +2289,169 @@ public class GameManager {
                 throw new GameStopException();
             }
             printCenteredLine("What would you like to do?", uiTheme.getHighlightColor());
-            printCenteredLine("1. Trade (buy/sell items)", uiTheme.getTextColor());
-            printCenteredLine("2. Talk (learn about " + loc.name + ")", uiTheme.getTextColor());
-            printCenteredLine("3. Leave", uiTheme.getTextColor());
-            printBorder("bottom");
-            System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
-            String choice = scan.nextLine().trim();
-            if (choice.equals("1")) {
-                tradeWithNPC(npcName);
-            } else if (choice.equals("2")) {
-                talkToNPC(npcName, loc);
-            } else if (choice.equals("3")) {
-                System.out.println(Color.colorize("You leave " + npcName + ".", Color.YELLOW));
-                break;
-            } else {
-                System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+            String choice;
+            switch (npcName) {
+                case "Data Sage" -> {
+                    printCenteredLine("1. Receive a random buff", uiTheme.getTextColor());
+                    printCenteredLine("2. Ask for wisdom (lore)", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> {
+                            switch (random.nextInt(3)) {
+                                case 0 -> { player.maxHP += 10; player.hp += 10; System.out.println(Color.colorize("Your max HP increased by 10!", Color.GREEN)); }
+                                case 1 -> { player.maxMana += 10; player.mana += 10; System.out.println(Color.colorize("Your max Mana increased by 10!", Color.BLUE)); }
+                                case 2 -> { player.minDmg += 2; player.maxDmg += 2; System.out.println(Color.colorize("Your damage increased by 2!", Color.YELLOW)); }
+                            }
+                        }
+                        case "2" -> System.out.println(Color.colorize("The Data Sage shares ancient digital lore about " + loc.name + ".", Color.PURPLE));
+                        case "3" -> { System.out.println(Color.colorize("You leave the Data Sage.", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
+                case "Patch Vendor" -> {
+                    printCenteredLine("1. Buy rare patches (consumables)", uiTheme.getTextColor());
+                    printCenteredLine("2. Sell bug reports", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> {
+                            System.out.println(Color.colorize("You buy a Patch of Restoration for 20 gold.", Color.GREEN));
+                            if (player.spendGold(20)) { player.addItem("Patch of Restoration", 0.5f); }
+                            else { System.out.println(Color.colorize("Not enough gold!", Color.RED)); }
+                        }
+                        case "2" -> {
+                            System.out.println(Color.colorize("You sell a bug report for 10 gold.", Color.YELLOW));
+                            player.addGold(10);
+                        }
+                        case "3" -> { System.out.println(Color.colorize("You leave the Patch Vendor.", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
+                case "Quantum Oracle" -> {
+                    printCenteredLine("1. Receive a prophecy (quest)", uiTheme.getTextColor());
+                    printCenteredLine("2. Ask about your fate (random stat)", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> {
+                            questManager.addQuest(
+                                "Prophecy of the Quantum Oracle",
+                                "Fulfill the Oracle's vision in " + loc.name + ".",
+                                Arrays.asList("Complete the Oracle's challenge in " + loc.name),
+                                Map.of("gold", 200, "xp", 100),
+                                null
+                            );
+                            System.out.println(Color.colorize("A new quest has been added!", Color.PURPLE));
+                        }
+                        case "2" -> {
+                            switch (random.nextInt(3)) {
+                                case 0 -> { System.out.println(Color.colorize("The Oracle sees great strength in your future.", Color.YELLOW)); player.maxDmg += 1; }
+                                case 1 -> { System.out.println(Color.colorize("The Oracle sees resilience in your path.", Color.GREEN)); player.maxHP += 5; player.hp += 5; }
+                                case 2 -> { System.out.println(Color.colorize("The Oracle sees wisdom in your journey.", Color.BLUE)); player.maxMana += 5; player.mana += 5; }
+                            }
+                        }
+                        case "3" -> { System.out.println(Color.colorize("You leave the Quantum Oracle.", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
+                case "Bitwise Healer" -> {
+                    printCenteredLine("1. Heal (10 gold)", uiTheme.getTextColor());
+                    printCenteredLine("2. Restore Mana (10 gold)", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> {
+                            if (player.spendGold(10)) { player.hp = player.maxHP; System.out.println(Color.colorize("You are fully healed!", Color.GREEN)); }
+                            else { System.out.println(Color.colorize("Not enough gold!", Color.RED)); }
+                        }
+                        case "2" -> {
+                            if (player.spendGold(10)) { player.mana = player.maxMana; System.out.println(Color.colorize("Your mana is fully restored!", Color.BLUE)); }
+                            else { System.out.println(Color.colorize("Not enough gold!", Color.RED)); }
+                        }
+                        case "3" -> { System.out.println(Color.colorize("You leave the Bitwise Healer.", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
+                case "Glitch Tinkerer" -> {
+                    printCenteredLine("1. Repair equipment (15 gold)", uiTheme.getTextColor());
+                    printCenteredLine("2. Upgrade random stat (25 gold)", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> {
+                            if (player.spendGold(15)) { System.out.println(Color.colorize("Your equipment is repaired!", Color.GREEN)); }
+                            else { System.out.println(Color.colorize("Not enough gold!", Color.RED)); }
+                        }
+                        case "2" -> {
+                            if (player.spendGold(25)) {
+                                switch (random.nextInt(3)) {
+                                    case 0 -> { player.maxHP += 5; System.out.println(Color.colorize("Max HP +5!", Color.GREEN)); }
+                                    case 1 -> { player.maxMana += 5; System.out.println(Color.colorize("Max Mana +5!", Color.BLUE)); }
+                                    case 2 -> { player.maxDmg += 1; System.out.println(Color.colorize("Max Damage +1!", Color.YELLOW)); }
+                                }
+                            } else { System.out.println(Color.colorize("Not enough gold!", Color.RED)); }
+                        }
+                        case "3" -> { System.out.println(Color.colorize("You leave the Glitch Tinkerer.", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
+                case "Memory Merchant" -> {
+                    printCenteredLine("1. Buy a random rare item (50 gold)", uiTheme.getTextColor());
+                    printCenteredLine("2. Sell a memory shard (25 gold)", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> {
+                            if (player.spendGold(50)) {
+                                String[] rareItems = {"Quantum Armor", "Compiler's Hammer", "Packet Cleaver", "Patch of Restoration", "Server Gardens Seed"};
+                                String item = rareItems[random.nextInt(rareItems.length)];
+                                player.addItem(item, 1.0f);
+                                System.out.println(Color.colorize("You bought a " + item + "!", Color.PURPLE));
+                            } else { System.out.println(Color.colorize("Not enough gold!", Color.RED)); }
+                        }
+                        case "2" -> {
+                            System.out.println(Color.colorize("You sell a memory shard for 25 gold.", Color.YELLOW));
+                            player.addGold(25);
+                        }
+                        case "3" -> { System.out.println(Color.colorize("You leave the Memory Merchant.", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
+                default -> {
+                    // Default fallback for generic friendly NPCs
+                    printCenteredLine("1. Trade (buy/sell items)", uiTheme.getTextColor());
+                    printCenteredLine("2. Talk (learn about " + loc.name + ")", uiTheme.getTextColor());
+                    printCenteredLine("3. Leave", uiTheme.getTextColor());
+                    printBorder("bottom");
+                    System.out.print(Color.colorize("Choose an option (1-3): ", Color.YELLOW));
+                    choice = scan.nextLine().trim();
+                    switch (choice) {
+                        case "1" -> tradeWithNPC(npcName);
+                        case "2" -> talkToNPC(npcName, loc);
+                        case "3" -> { System.out.println(Color.colorize("You leave " + npcName + ".", Color.YELLOW)); break; }
+                        default -> System.out.println(Color.colorize("Invalid option. Try again.", Color.RED));
+                    }
+                    if ("3".equals(choice)) break;
+                }
             }
         }
     }
@@ -2493,10 +2666,10 @@ public class GameManager {
         for (int i = 0; i < inventory.size(); i++) {
             Hero.InventoryItem item = inventory.get(i);
             int w = uiTheme.getMenuWidth();
-            System.out.println(Color.colorize("| " + String.format("%d. %-" + (Math.max(0, w - 6)) + "s", i + 1, item.name) + " |", getItemRarity(item.name)));
+            System.out.println(Color.colorize("| " + String.format("%d. %s", i + 1, item.name), getItemRarity(item.name)));
         }
         int w = uiTheme.getMenuWidth();
-        System.out.println(Color.colorize("| " + String.format("%d. %-" + (Math.max(0, w - 6)) + "s", inventory.size() + 1, "Cancel") + " |", Color.WHITE));
+        System.out.println(Color.colorize("| " + String.format("%d. %s", inventory.size() + 1, "Cancel"), Color.WHITE));
         printBorder("bottom");
         System.out.print(Color.colorize("Choose an item (1-" + (inventory.size() + 1) + "): ", Color.YELLOW));
         int choice = getChoice(1, inventory.size() + 1);
@@ -2504,7 +2677,34 @@ public class GameManager {
         if (choice <= inventory.size()) {
             Hero.InventoryItem item = inventory.get(choice - 1);
             String itemName = item.name;
-            if (itemName.toLowerCase().contains("potion") || itemName.toLowerCase().contains("elixir")) {
+            boolean used = false;
+            // Special item effects
+            if (itemName.equalsIgnoreCase("Patch of Restoration")) {
+                player.hp = player.maxHP;
+                player.mana = player.maxMana;
+                System.out.println(Color.colorize("You used a Patch of Restoration! Fully healed and mana restored!", Color.GREEN));
+                used = true;
+            } else if (itemName.equalsIgnoreCase("Server Gardens Seed")) {
+                String[] consumables = {"Health Potion", "Mana Potion", "Energy Bar"};
+                String reward = consumables[random.nextInt(consumables.length)];
+                player.addItem(reward, 0.2f);
+                System.out.println(Color.colorize("You planted the Server Gardens Seed and received a " + reward + "!", Color.PURPLE));
+                used = true;
+            } else if (itemName.equalsIgnoreCase("Energy Bar")) {
+                player.hp = Math.min(player.maxHP, player.hp + 25);
+                player.mana = Math.min(player.maxMana, player.mana + 10);
+                System.out.println(Color.colorize("You eat the Energy Bar and restore 25 HP and 10 Mana!", Color.BLUE));
+                used = true;
+            } else if (itemName.equalsIgnoreCase("Tinker's Toolkit")) {
+                System.out.println(Color.colorize("You use the Tinker's Toolkit to repair your equipped weapon and armor!", Color.YELLOW));
+                // Could add more detailed repair logic here
+                used = true;
+            } else if (itemName.equalsIgnoreCase("Ancient Coin")) {
+                int bonus = 10 + random.nextInt(41);
+                player.addGold(bonus);
+                System.out.println(Color.colorize("You trade the Ancient Coin for " + bonus + " gold!", Color.YELLOW));
+                used = true;
+            } else if (itemName.toLowerCase().contains("potion") || itemName.toLowerCase().contains("elixir")) {
                 if (itemName.toLowerCase().contains("health")) {
                     player.hp = Math.min(player.maxHP, player.hp + 50);
                     System.out.println(Color.colorize("You used a " + itemName + " and restored 50 HP!", getItemRarity(itemName)));
@@ -2512,29 +2712,29 @@ public class GameManager {
                     player.mana = Math.min(player.maxMana, player.mana + 50);
                     System.out.println(Color.colorize("You used a " + itemName + " and restored 50 Mana!", getItemRarity(itemName)));
                 } else {
-
                     player.hp = Math.min(player.maxHP, player.hp + 20);
                     player.mana = Math.min(player.maxMana, player.mana + 20);
                     System.out.println(Color.colorize("You used a " + itemName + "!", getItemRarity(itemName)));
                 }
-                player.removeItem(itemName);
+                used = true;
             } else if (itemName.contains("Sword") || itemName.contains("Staff") || itemName.contains("Bow")
                     || itemName.contains("Dagger") || itemName.contains("Mace") || itemName.contains("Warhammer")
                     || itemName.contains("Battleaxe") || itemName.contains("Flail") || itemName.contains("Wand")
                     || itemName.contains("Scepter")) {
                 player.addItem(equippedWeapon, 2.0f); // Re-add old weapon to inventory
                 equippedWeapon = itemName;
-                player.removeItem(itemName);
                 System.out.println(Color.colorize("You equipped " + itemName + "!", getItemRarity(itemName)));
+                used = true;
             } else if (itemName.contains("Armor") || itemName.contains("Robe") || itemName.contains("Cloak")
                     || itemName.contains("Chainmail") || itemName.contains("Shroud")) {
                 player.addItem(equippedArmor, 3.0f); // Re-add old armor to inventory
                 equippedArmor = itemName;
-                player.removeItem(itemName);
                 System.out.println(Color.colorize("You equipped " + itemName + "!", getItemRarity(itemName)));
+                used = true;
             } else {
                 System.out.println(Color.colorize("You cannot use or equip " + itemName + ".", Color.RED));
             }
+            if (used) player.removeItem(itemName);
         } else {
             System.out.println(Color.colorize("Cancelled.", Color.YELLOW));
         }
