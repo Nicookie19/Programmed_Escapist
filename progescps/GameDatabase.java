@@ -10,26 +10,88 @@ import java.util.Map;
 /**
  * GameDatabase
  *
- * Reads connection info from environment variables if available: - DB_URL
- * (default
- * jdbc:mysql://localhost:3306/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL)
- * - DB_USER (default root) - DB_PASS (default empty)
+ * Reads connection info from environment variables if available:
+ * - DB_URL (default jdbc:mysql://localhost:8889/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL)
+ * - DB_USER (default root)
+ * - DB_PASS (default root)
  *
  * Provides helper DAO methods used by GameManager and other classes.
  */
 public class GameDatabase {
 
     // Default connection info (can be overridden by environment variables)
-    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL";
+    // MAMP/XAMPP on macOS typically uses port 8889 for MySQL.
+    // Override with DB_URL, DB_USER, and DB_PASS if your local stack uses different settings.
+    private static final String DEFAULT_URL = "jdbc:mysql://localhost:8889/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL";
     private static final String DEFAULT_USER = "root";
-    private static final String DEFAULT_PASS = "";
+    private static final String DEFAULT_PASS = "root";
+    private static volatile String lastConnectionError = "";
 
     // Get a database connection (call when you need it)
     public static Connection getConnection() throws SQLException {
-        String url = System.getenv().getOrDefault("DB_URL", DEFAULT_URL);
-        String user = System.getenv().getOrDefault("DB_USER", DEFAULT_USER);
-        String pass = System.getenv().getOrDefault("DB_PASS", DEFAULT_PASS);
-        return DriverManager.getConnection(url, user, pass);
+        loadMysqlDriver();
+
+        String envUrl = System.getenv("DB_URL");
+        String envUser = System.getenv("DB_USER");
+        String envPass = System.getenv("DB_PASS");
+
+        List<DbConfig> configs = new ArrayList<>();
+        if (envUrl != null || envUser != null || envPass != null) {
+            configs.add(new DbConfig(
+                    envUrl != null ? envUrl : DEFAULT_URL,
+                    envUser != null ? envUser : DEFAULT_USER,
+                    envPass != null ? envPass : DEFAULT_PASS
+            ));
+        }
+
+        // Local fallbacks cover common MAMP (8889) and MySQL/XAMPP/Homebrew (3306) setups.
+        configs.add(new DbConfig(DEFAULT_URL, DEFAULT_USER, DEFAULT_PASS));
+        configs.add(new DbConfig(DEFAULT_URL, DEFAULT_USER, ""));
+        configs.add(new DbConfig("jdbc:mysql://localhost:3306/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL", DEFAULT_USER, ""));
+        configs.add(new DbConfig("jdbc:mysql://localhost:3306/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL", DEFAULT_USER, DEFAULT_PASS));
+
+        SQLException lastException = null;
+        for (DbConfig config : configs) {
+            try {
+                Connection conn = DriverManager.getConnection(config.url, config.user, config.pass);
+                lastConnectionError = "";
+                return conn;
+            } catch (SQLException e) {
+                lastException = e;
+            }
+        }
+
+        if (lastException == null) {
+            lastException = new SQLException("No database connection configurations were available.");
+        }
+        lastConnectionError = lastException.getMessage();
+        throw lastException;
+    }
+
+    private static void loadMysqlDriver() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            lastConnectionError = "MySQL JDBC driver is missing from the runtime classpath.";
+            throw new SQLException(lastConnectionError, e);
+        }
+    }
+
+    public static String getLastConnectionError() {
+        return lastConnectionError;
+    }
+
+    private static class DbConfig {
+
+        private final String url;
+        private final String user;
+        private final String pass;
+
+        private DbConfig(String url, String user, String pass) {
+            this.url = url;
+            this.user = user;
+            this.pass = pass;
+        }
     }
 
     // --- Instance DAO METHODS (for convenience when you have a Connection instance) ---

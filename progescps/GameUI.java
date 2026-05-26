@@ -1345,13 +1345,18 @@ public class GameUI {
                 } else {
                     dbStatusLabel.setText("DB: OFFLINE");
                     dbStatusLabel.setForeground(java.awt.Color.RED);
-                    dbStatusLabel.setToolTipText("CRITICAL: Database connection failed. Check XAMPP.");
+                    dbStatusLabel.setToolTipText("CRITICAL: Database connection failed. Check your local MySQL stack (MAMP/XAMPP). ");
+                    String dbError = GameDatabase.getLastConnectionError();
+                    String errorDetails = (dbError == null || dbError.isBlank())
+                            ? ""
+                            : "\n\nLast JDBC error:\n" + dbError;
 
                     JOptionPane.showMessageDialog(frame,
                             "CRITICAL ERROR: Could not connect to the database.\n\n"
-                                    + "1. Is XAMPP running (Apache and MySQL)?\n"
+                                    + "1. Is your local MySQL stack running (MAMP/XAMPP or MySQL server)?\n"
                                     + "2. Is the database 'programmed_escapist' created?\n"
-                                    + "3. Did you fix the password bug in GameDatabase.java?",
+                                    + "3. Are DB_URL/DB_USER/DB_PASS environment variables set for your configuration?"
+                                    + errorDetails,
                             "Database Connection Error",
                             JOptionPane.ERROR_MESSAGE);
                 }

@@ -9,6 +9,8 @@ University of the Immaculate Conception
 Father Selga St., Davao City, Philippines
 
 
+## Command to run(cd "/Users/nico/VS Code Projects/bnew-draft-main/ProgEscpss"ant run) ## 
+
 ## Software Purpose
 
 Project: "Programmed Escapist"
@@ -346,7 +348,23 @@ javac -version
 
 Expected: Java 17.x reported.
 
-### 4.2 First-Time Setup
+### 4.2 MAMP Database Setup (macOS)
+This game uses MySQL for game data and is compatible with MAMP on macOS.
+
+1. Open MAMP and start the MySQL server.
+2. Confirm the MySQL port is `8889` (default MAMP port) and the MySQL user is `root`.
+3. Create the database `programmed_escapist` using phpMyAdmin or the MySQL command line.
+4. If your MAMP MySQL credentials or port differ, set environment variables before running the game:
+
+```bash
+export DB_URL="jdbc:mysql://localhost:8889/programmed_escapist?zeroDateTimeBehavior=CONVERT_TO_NULL"
+export DB_USER="root"
+export DB_PASS=""
+```
+
+On macOS, if you use a non-default port or password, update the `DB_URL`, `DB_USER`, and `DB_PASS` values accordingly.
+
+### 4.3 First-Time Setup
 - Splash Screen: displayed before the main menu.
 - Main Menu Page: start/load/quit options.
 - Choose your character page: select one of the hero classes.
